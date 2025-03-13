@@ -5,6 +5,7 @@ import { Inter } from "next/font/google"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { CartProvider } from "@/context/cart-context"
 import MainNav from "@/components/main-nav"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -24,14 +25,16 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${inter.className} bg-[#FBE1D0]/30`}>
         <ThemeProvider attribute="class" defaultTheme="light">
-          <MainNav />
-          {children}
-          <footer className="w-full border-t border-[#F4847B]/10 bg-[#FBE1D0]/60 py-6">
-            <div className="container mx-auto px-4 text-center text-sm text-[#631C21]/70">
-              <p>© 2025 Pavito Velas. Todos os direitos reservados.</p>
-            </div>
-          </footer>
-          <Toaster />
+          <CartProvider>
+            <MainNav />
+            {children}
+            <footer className="w-full border-t border-[#F4847B]/10 bg-[#FBE1D0]/60 py-6">
+              <div className="container mx-auto px-4 text-center text-sm text-[#631C21]/70">
+                <p>© 2025 Pavito Velas. Todos os direitos reservados.</p>
+              </div>
+            </footer>
+            <Toaster />
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>
