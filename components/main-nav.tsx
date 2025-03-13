@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Flame, Menu, Search, ShoppingBag, X } from "lucide-react"
+import { Flame, Menu, Search, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import CartDropdown from "@/components/cart-dropdown"
 
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -71,10 +72,7 @@ export default function MainNav() {
                 <span className="sr-only">Buscar</span>
               </Button>
 
-              <Button variant="ghost" size="icon" className="text-[#631C21]">
-                <ShoppingBag className="h-5 w-5" />
-                <span className="sr-only">Carrinho</span>
-              </Button>
+              <CartDropdown />
 
               <Sheet>
                 <SheetTrigger asChild>
