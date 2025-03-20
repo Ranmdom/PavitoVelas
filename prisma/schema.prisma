@@ -1,0 +1,162 @@
+// --------------------------------------------------
+// PRISMA SCHEMA
+// --------------------------------------------------
+
+// 1) Defina a fonte de dados (data source)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") 
+  // Ex.: "postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+}
+
+// 2) Defina o client do Prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --------------------------------------------------
+// MODELOS
+// --------------------------------------------------
+
+model Usuario {
+  usuarioId   BigInt   @id @default(autoincrement())
+  nome        String
+  sobrenome   String
+  email       String   @unique
+  senhaHash   String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  deletedAt   DateTime?
+
+  // Relações
+  pedidos           Pedido[]
+  metodosPagamento  MetodoPagamento[]
+  enderecos         Endereco[]
+}
+
+model Categoria {
+  categoriaId BigInt   @id @default(autoincrement())
+  nome        String
+  descricao   String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  deletedAt   DateTime?
+
+  // Relação
+  produtos    Produto[]
+}
+
+model Produto {
+  produtoId   BigInt   @id @default(autoincrement())
+  categoriaId BigInt?
+
+  nome        String
+  preco       Decimal  @db.Decimal(10, 2)
+  fragrancia  String?
+  tempoQueima Int?
+  descricao   String?
+  peso        Decimal? @db.Decimal(10, 2)
+  altura      Decimal? @db.Decimal(10, 2)
+  largura     Decimal? @db.Decimal(10, 2)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  deletedAt   DateTime?
+
+  // Relações
+  categoria   Categoria? @relation(fields: [categoriaId], references: [categoriaId])
+  itensPedido ItemPedido[]
+}
+
+model Pedido {
+  pedidoId    BigInt   @id @default(autoincrement())
+  usuarioId   BigInt
+
+  statusPedido String
+  dataPedido   DateTime @default(now())
+  dataEnvio    DateTime?
+  valorTotal   Decimal  @db.Decimal(10, 2)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+  deletedAt    DateTime?
+
+  // Relações
+  usuario      Usuario   @relation(fields: [usuarioId], references: [usuarioId])
+  itensPedido  ItemPedido[]
+  pagamentos   Pagamento[]
+}
+
+model ItemPedido {
+  itemPedidoId  BigInt   @id @default(autoincrement())
+  pedidoId      BigInt
+  produtoId     BigInt
+
+  quantidade    Int
+  precoUnitario Decimal @db.Decimal(10, 2)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+  deletedAt     DateTime?
+
+  // Relações
+  pedido        Pedido   @relation(fields: [pedidoId], references: [pedidoId])
+  produto       Produto  @relation(fields: [produtoId], references: [produtoId])
+}
+
+model MetodoPagamento {
+  metodoPagamentoId BigInt   @id @default(autoincrement())
+  usuarioId         BigInt
+
+  nomeMetodo        String?
+  numeroCartao      String?
+  dataExpiracao     String?
+  nomeTitular       String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+  deletedAt         DateTime?
+
+  // Relações
+  usuario           Usuario   @relation(fields: [usuarioId], references: [usuarioId])
+  pagamentos        Pagamento[]
+}
+
+model Pagamento {
+  pagamentoId       BigInt   @id @default(autoincrement())
+  pedidoId          BigInt
+  metodoPagamentoId BigInt
+
+  valor             Decimal  @db.Decimal(10, 2)
+  dataPagamento     DateTime @default(now())
+  statusPagamento   String
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+  deletedAt         DateTime?
+
+  // Relações
+  pedido            Pedido         @relation(fields: [pedidoId], references: [pedidoId])
+  metodoPagamento   MetodoPagamento @relation(fields: [metodoPagamentoId], references: [metodoPagamentoId])
+}
+
+model Endereco {
+  enderecoId  BigInt   @id @default(autoincrement())
+  usuarioId   BigInt
+
+  logradouro  String
+  numero      String
+  bairro      String?
+  cidade      String
+  estado      String
+  cep         String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  deletedAt   DateTime?
+
+  // Relação
+  usuario     Usuario  @relation(fields: [usuarioId], references: [usuarioId])
+}
