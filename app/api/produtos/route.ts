@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getTokenFromHeader, verifyToken } from '@/lib/auth'
 // import bcrypt from 'bcrypt' // caso queira hash de senha aqui também
+import { jsonResponse } from '@/utils/jsonResponse'
+
 
 export async function GET(req: NextRequest) {
   // Exemplo de verificação de token:
@@ -13,8 +15,12 @@ export async function GET(req: NextRequest) {
   // }
 
   try {
-    const produtos = await prisma.produto.findMany()
-    return NextResponse.json(produtos, { status: 200 })
+    const produtos = await prisma.produto.findMany({
+      include:{
+        categoria:true
+      }
+    })
+    return jsonResponse(produtos)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar produtos.' }, { status: 500 })
@@ -45,7 +51,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json(produtoUpsert, { status: 200 })
+    return jsonResponse(produtoUpsert)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao criar/atualizar produto.' }, { status: 500 })

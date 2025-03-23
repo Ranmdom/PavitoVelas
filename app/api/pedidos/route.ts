@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getTokenFromHeader, verifyToken } from '@/lib/auth'
+import { jsonResponse } from '@/utils/jsonResponse'
 // import bcrypt from 'bcrypt' // caso queira hash de senha aqui também
 
 export async function GET(req: NextRequest) {
@@ -13,8 +14,19 @@ export async function GET(req: NextRequest) {
   // }
 
   try {
-    const pedidos = await prisma.pedido.findMany()
-    return NextResponse.json(pedidos, { status: 200 })
+    const pedidos = await prisma.pedido.findMany({
+      include: {
+        itensPedido: {
+          include: {
+            produto: true, // inclui os dados do produto relacionado a cada item do pedido
+          }
+        },
+        // Se desejar, pode incluir outros relacionamentos, como usuário e pagamentos:
+        usuario: true,
+        pagamentos: true
+      }
+    })
+    return jsonResponse(pedidos)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar pedidos.' }, { status: 500 })
@@ -45,7 +57,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json(pedidoUpsert, { status: 200 })
+    return jsonResponse(pedidoUpsert)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao criar/atualizar pedido.' }, { status: 500 })

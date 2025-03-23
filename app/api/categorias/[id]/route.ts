@@ -1,6 +1,8 @@
 // app/api/usuarios/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { jsonResponse } from '@/utils/jsonResponse'
+
 
 interface IParams {
   params: {
@@ -16,7 +18,7 @@ export async function GET(req: NextRequest, { params }: IParams) {
     if (!usuario) {
       return NextResponse.json({ error: 'Categoria não encontrada.' }, { status: 404 })
     }
-    return NextResponse.json(usuario, { status: 200 })
+    return jsonResponse(usuario)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar a categoria.' }, { status: 500 })
@@ -36,7 +38,7 @@ export async function PUT(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(usuarioAtualizado, { status: 200 })
+    return jsonResponse(usuarioAtualizado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao atualizar a categoria.' }, { status: 500 })
@@ -56,7 +58,7 @@ export async function DELETE(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(usuarioDeletado, { status: 200 })
+    return jsonResponse(usuarioDeletado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao deletar a categoria.' }, { status: 500 })

@@ -1,6 +1,7 @@
 // app/api/produtos/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { jsonResponse } from '@/utils/jsonResponse'
 
 interface IParams {
   params: {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest, { params }: IParams) {
     if (!produto) {
       return NextResponse.json({ error: 'produto não encontrado.' }, { status: 404 })
     }
-    return NextResponse.json(produto, { status: 200 })
+    return jsonResponse(produto)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar produto.' }, { status: 500 })
@@ -36,7 +37,7 @@ export async function PUT(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(produtoAtualizado, { status: 200 })
+    return jsonResponse(produtoAtualizado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao atualizar produto.' }, { status: 500 })
@@ -56,7 +57,7 @@ export async function DELETE(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(produtoDeletado, { status: 200 })
+    return jsonResponse(produtoDeletado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao deletar produto.' }, { status: 500 })

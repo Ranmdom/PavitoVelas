@@ -1,6 +1,8 @@
 // app/api/metodoPagamentos/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { jsonResponse } from '@/utils/jsonResponse'
+
 
 interface IParams {
   params: {
@@ -16,7 +18,7 @@ export async function GET(req: NextRequest, { params }: IParams) {
     if (!metodoPagamento) {
       return NextResponse.json({ error: 'metodoPagamento não encontrado.' }, { status: 404 })
     }
-    return NextResponse.json(metodoPagamento, { status: 200 })
+    return jsonResponse(metodoPagamento)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar metodoPagamento.' }, { status: 500 })
@@ -36,7 +38,7 @@ export async function PUT(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(metodoPagamentoAtualizado, { status: 200 })
+    return jsonResponse(metodoPagamentoAtualizado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao atualizar metodoPagamento.' }, { status: 500 })
@@ -56,7 +58,7 @@ export async function DELETE(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(metodoPagamentoDeletado, { status: 200 })
+    return jsonResponse(metodoPagamentoDeletado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao deletar metodoPagamento.' }, { status: 500 })

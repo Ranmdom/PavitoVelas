@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getTokenFromHeader, verifyToken } from '@/lib/auth'
+import { jsonResponse } from '@/utils/jsonResponse'
 // import bcrypt from 'bcrypt' // caso queira hash de senha aqui também
 
 export async function GET(req: NextRequest) {
@@ -13,8 +14,9 @@ export async function GET(req: NextRequest) {
   // }
 
   try {
-    const usuarios = await prisma.usuario.findMany()
-    return NextResponse.json(usuarios, { status: 200 })
+    const usuarios = await prisma.usuario.findMany({
+    })
+    return jsonResponse(usuarios)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar usuários.' }, { status: 500 })
@@ -45,7 +47,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json(usuarioUpsert, { status: 200 })
+    return jsonResponse(usuarioUpsert)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao criar/atualizar usuário.' }, { status: 500 })

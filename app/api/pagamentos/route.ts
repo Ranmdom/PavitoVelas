@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getTokenFromHeader, verifyToken } from '@/lib/auth'
 // import bcrypt from 'bcrypt' // caso queira hash de senha aqui também
+import { jsonResponse } from '@/utils/jsonResponse'
+
 
 export async function GET(req: NextRequest) {
   // Exemplo de verificação de token:
@@ -14,7 +16,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const pagamentos = await prisma.pagamento.findMany()
-    return NextResponse.json(pagamentos, { status: 200 })
+    return jsonResponse(pagamentos)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar pagamentos.' }, { status: 500 })
@@ -45,7 +47,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json(pagamentoUpsert, { status: 200 })
+    return jsonResponse(pagamentoUpsert)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao criar/atualizar pagamento.' }, { status: 500 })

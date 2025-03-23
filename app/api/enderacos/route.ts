@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getTokenFromHeader, verifyToken } from '@/lib/auth'
 // import bcrypt from 'bcrypt' // caso queira hash de senha aqui também
+import { jsonResponse } from '@/utils/jsonResponse'
 
 export async function GET(req: NextRequest) {
   // Exemplo de verificação de token:
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const enderecos = await prisma.endereco.findMany()
-    return NextResponse.json(enderecos, { status: 200 })
+    return jsonResponse(enderecos)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar endereços.' }, { status: 500 })
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json(enderecoUpsert, { status: 200 })
+    return jsonResponse(enderecoUpsert)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao criar/atualizar endereço.' }, { status: 500 })

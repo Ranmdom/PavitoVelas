@@ -1,6 +1,7 @@
 // app/api/enderecos/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { jsonResponse } from '@/utils/jsonResponse'
 
 interface IParams {
   params: {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest, { params }: IParams) {
     if (!endereco) {
       return NextResponse.json({ error: 'endereço não encontrado.' }, { status: 404 })
     }
-    return NextResponse.json(endereco, { status: 200 })
+    return jsonResponse(endereco)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar endereço.' }, { status: 500 })
@@ -36,7 +37,7 @@ export async function PUT(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(enderecoAtualizado, { status: 200 })
+    return jsonResponse(enderecoAtualizado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao atualizar endereço.' }, { status: 500 })
@@ -56,7 +57,7 @@ export async function DELETE(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(enderecoDeletado, { status: 200 })
+    return jsonResponse(enderecoDeletado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao deletar endereço.' }, { status: 500 })

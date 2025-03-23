@@ -1,6 +1,7 @@
 // app/api/pagamentos/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { jsonResponse } from '@/utils/jsonResponse'
 
 interface IParams {
   params: {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest, { params }: IParams) {
     if (!pagamento) {
       return NextResponse.json({ error: 'pagamento não encontrado.' }, { status: 404 })
     }
-    return NextResponse.json(pagamento, { status: 200 })
+    return jsonResponse(pagamento)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar pagamento.' }, { status: 500 })
@@ -36,7 +37,7 @@ export async function PUT(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(pagamentoAtualizado, { status: 200 })
+    return jsonResponse(pagamentoAtualizado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao atualizar pagamento.' }, { status: 500 })
@@ -56,7 +57,7 @@ export async function DELETE(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(pagamentoDeletado, { status: 200 })
+    return jsonResponse(pagamentoDeletado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao deletar pagamento.' }, { status: 500 })

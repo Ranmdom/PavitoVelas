@@ -1,6 +1,7 @@
 // app/api/pedidos/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { jsonResponse } from '@/utils/jsonResponse'
 
 interface IParams {
   params: {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest, { params }: IParams) {
     if (!pedido) {
       return NextResponse.json({ error: 'pedido não encontrado.' }, { status: 404 })
     }
-    return NextResponse.json(pedido, { status: 200 })
+    return jsonResponse(pedido)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao buscar pedido.' }, { status: 500 })
@@ -36,7 +37,7 @@ export async function PUT(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(pedidoAtualizado, { status: 200 })
+    return jsonResponse(pedidoAtualizado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao atualizar pedido.' }, { status: 500 })
@@ -56,7 +57,7 @@ export async function DELETE(req: NextRequest, { params }: IParams) {
       },
     })
 
-    return NextResponse.json(pedidoDeletado, { status: 200 })
+    return jsonResponse(pedidoDeletado)
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Erro ao deletar pedido.' }, { status: 500 })
