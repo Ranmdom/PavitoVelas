@@ -3,7 +3,7 @@
 import type React from "react"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   BarChart3,
   CreditCard,
@@ -20,6 +20,8 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useAuth } from "@/context/auth-context"
+import { toast } from "@/hooks/use-toast"
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   items: {
@@ -54,6 +56,18 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 }
 
 export default function AdminSidebar() {
+  const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    logout()
+    toast({
+      title: "Logout realizado com sucesso",
+      description: "Você foi desconectado do painel administrativo.",
+    })
+    router.push("/")
+  }
+
   const sidebarNavItems = [
     {
       title: "Dashboard",
@@ -112,14 +126,14 @@ export default function AdminSidebar() {
         <div className="border-t border-[#F4847B]/20 p-4">
           <div className="flex items-center gap-3 rounded-md px-3 py-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F4847B]/20">
-              <span className="text-sm font-medium text-[#631C21]">AV</span>
+              <span className="text-sm font-medium text-[#631C21]">{user?.name.charAt(0).toUpperCase() || "A"}</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-[#631C21]">Admin Velas</p>
-              <p className="text-xs text-[#631C21]/70">admin@pavitovelas.com</p>
+              <p className="text-sm font-medium text-[#631C21]">{user?.name || "Admin Velas"}</p>
+              <p className="text-xs text-[#631C21]/70">{user?.email || "admin@pavitovelas.com"}</p>
             </div>
           </div>
-          <Button variant="ghost" className="mt-2 w-full justify-start text-[#631C21]">
+          <Button variant="ghost" className="mt-2 w-full justify-start text-[#631C21]" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Sair
           </Button>

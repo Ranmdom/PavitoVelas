@@ -2,16 +2,29 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Flame, Menu, Search, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Flame, LogIn, LogOut, Menu, Search, User, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import CartDropdown from "@/components/cart-dropdown"
+import { useAuth } from "@/context/auth-context"
+import { toast } from "@/hooks/use-toast"
 
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSearchAnimating, setIsSearchAnimating] = useState(false)
+  const { user, logout } = useAuth()
+  const router = useRouter()
 
   const handleSearchOpen = () => {
     setIsSearchAnimating(true)
@@ -23,6 +36,22 @@ export default function MainNav() {
 
   const handleSearchClose = () => {
     setIsSearchOpen(false)
+  }
+
+  const handleLogout = () => {
+    logout()
+    toast({
+      title: "Logout realizado com sucesso",
+      description: "Você foi desconectado da sua conta.",
+    })
+  }
+
+  const navigateToAdminPanel = () => {
+    router.push("/admin")
+  }
+
+  const navigateToUserProfile = () => {
+    router.push("/minha-conta")
   }
 
   return (
@@ -74,6 +103,59 @@ export default function MainNav() {
 
               <CartDropdown />
 
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative text-[#631C21]">
+                      <User className="h-5 w-5" />
+                      <span className="sr-only">Perfil</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F4847B]/20">
+                        <span className="text-xs font-medium text-[#631C21]">{user.name.charAt(0).toUpperCase()}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{user.name}</span>
+                        <span className="text-xs text-[#631C21]/70">{user.email}</span>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+
+                    {user.role === "admin" ? (
+                      <DropdownMenuItem onClick={navigateToAdminPanel}>Painel Administrativo</DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem onClick={navigateToUserProfile}>Minha Conta</DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative text-[#631C21]">
+                      <LogIn className="h-5 w-5" />
+                      <span className="sr-only">Login</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Entrar</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                      <Link href="/login">Login de Cliente</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/login">Login de Administrador</Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="md:hidden">
@@ -92,6 +174,22 @@ export default function MainNav() {
                     <Link href="/contato" className="text-[#631C21] transition-colors hover:text-[#F4847B]">
                       Contato
                     </Link>
+                    {!user && (
+                      <>
+                        <Link href="/login" className="text-[#631C21] transition-colors hover:text-[#F4847B]">
+                          Login de Cliente
+                        </Link>
+                        <Link href="/admin/login" className="text-[#631C21] transition-colors hover:text-[#F4847B]">
+                          Login de Administrador
+                        </Link>
+                      </>
+                    )}
+                    {user && (
+                      <Button variant="ghost" className="justify-start p-0 text-[#631C21]" onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sair
+                      </Button>
+                    )}
                   </nav>
                 </SheetContent>
               </Sheet>
