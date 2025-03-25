@@ -24,6 +24,7 @@ model Usuario {
   sobrenome   String
   email       String   @unique
   senhaHash   String
+  tipo       String   @default("cliente") 
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())

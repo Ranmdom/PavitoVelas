@@ -25,7 +25,7 @@ export default function CustomerLoginForm() {
     setIsLoading(true)
 
     try {
-      const success = await login(email, password, "customer")
+      const success = await login(email, password)
 
       if (success) {
         toast({

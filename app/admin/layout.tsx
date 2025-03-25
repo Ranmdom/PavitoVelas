@@ -17,12 +17,12 @@ export default function AdminLayout({
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== "admin")) {
+    if (!isLoading && (!user || user.tipo !== "admin")) {
       router.push("/admin/login")
     }
   }, [user, isLoading, router])
 
-  if (isLoading || !user || user.role !== "admin") {
+  if (isLoading || !user || user.tipo !== "admin") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#FBE1D0]/30">
         <div className="flex flex-col items-center">

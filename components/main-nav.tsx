@@ -8,6 +8,9 @@ import { Flame, LogOut, Menu, Search, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import CartDropdown from "@/components/cart-dropdown"
+import { useAuth } from "@/context/auth-context"
+import { toast } from "@/hooks/use-toast"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import CartDropdown from "@/components/cart-dropdown"
-import { useAuth } from "@/context/auth-context"
-import { toast } from "@/hooks/use-toast"
+
 
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -111,21 +112,25 @@ export default function MainNav() {
                       <span className="sr-only">Perfil</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="bg-white">
                     <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                     <DropdownMenuItem className="flex items-center gap-2">
                       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F4847B]/20">
-                        <span className="text-xs font-medium text-[#631C21]">{user.name.charAt(0).toUpperCase()}</span>
+                        <span className="text-xs font-medium text-[#631C21]">{user.nome.charAt(0).toUpperCase()}</span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium">{user.name}</span>
+                        <span className="text-sm font-medium">{user.nome}</span>
                         <span className="text-xs text-[#631C21]/70">{user.email}</span>
                       </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
 
-                    {user.role === "admin" ? (
+
+                    {user.tipo === "admin" ? (
+                      <>
                       <DropdownMenuItem onClick={navigateToAdminPanel}>Painel Administrativo</DropdownMenuItem>
+                      <DropdownMenuItem onClick={navigateToUserProfile}>Minha Conta</DropdownMenuItem>
+                      </>
                     ) : (
                       <DropdownMenuItem onClick={navigateToUserProfile}>Minha Conta</DropdownMenuItem>
                     )}
@@ -137,22 +142,12 @@ export default function MainNav() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative text-[#631C21]">
-                      Entrar
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Entrar</DropdownMenuLabel>
-                    <DropdownMenuItem asChild>
-                      <Link href="/login">Login de Cliente</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin/login">Login de Administrador</Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                // Botão "Entrar" direciona diretamente para /login
+                <Link href="/login">
+                  <Button variant="ghost" className="relative text-[#631C21]">
+                    Entrar
+                  </Button>
+                </Link>
               )}
 
               <Sheet>
@@ -199,4 +194,3 @@ export default function MainNav() {
     </header>
   )
 }
-

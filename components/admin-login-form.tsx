@@ -25,7 +25,7 @@ export default function AdminLoginForm() {
     setIsLoading(true)
 
     try {
-      const success = await login(email, password, "admin")
+      const success = await login(email, password)
 
       if (success) {
         toast({

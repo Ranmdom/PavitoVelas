@@ -15,7 +15,7 @@ export default function CustomerAccountInfo() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: user?.name || "",
+    name: user?.nome || "",
     email: user?.email || "",
     phone: "",
     currentPassword: "",

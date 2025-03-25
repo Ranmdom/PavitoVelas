@@ -1,20 +1,21 @@
 "use client"
-
+// auth-context.tsx
 import type React from "react"
-
 import { createContext, useContext, useEffect, useState } from "react"
 
-type UserRole = "admin" | "customer" | null
+type UserRole = "admin" | "cliente" | null
 type UserData = {
-  id: string
-  name: string
+  id: number
+  nome: string
+  sobrenome: string
   email: string
-  role: UserRole
+  tipo: UserRole
 } | null
 
 interface AuthContextType {
   user: UserData
-  login: (email: string, password: string, role: UserRole) => Promise<boolean>
+  token: string | null
+  login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   isLoading: boolean
 }
@@ -23,73 +24,71 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserData>(null)
+  const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   // Verificar se o usuário já está logado ao carregar a página
   useEffect(() => {
+    const storedToken = localStorage.getItem("pavito-token")
     const storedUser = localStorage.getItem("pavito-user")
-    if (storedUser) {
+
+    if (storedToken && storedUser) {
       try {
+        setToken(storedToken)
         setUser(JSON.parse(storedUser))
       } catch (error) {
         console.error("Erro ao carregar usuário:", error)
         localStorage.removeItem("pavito-user")
+        localStorage.removeItem("pavito-token")
       }
     }
     setIsLoading(false)
   }, [])
 
-  // Função de login simulada
-  const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
+  // Função de login com API real
+  const login = async (email: string, senha: string): Promise<boolean> => {
     setIsLoading(true)
 
-    // Simulação de verificação de credenciais
-    // Em um ambiente real, isso seria uma chamada de API
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Simulação de credenciais para admin
-        if (role === "admin" && email === "admin@pavitovelas.com" && password === "admin123") {
-          const adminUser = {
-            id: "1",
-            name: "Admin Velas",
-            email: "admin@pavitovelas.com",
-            role: "admin" as UserRole,
-          }
-          setUser(adminUser)
-          localStorage.setItem("pavito-user", JSON.stringify(adminUser))
-          setIsLoading(false)
-          resolve(true)
-          return
-        }
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, senha }),
+      })
 
-        // Simulação de credenciais para cliente
-        if (role === "customer" && email.includes("@") && password.length >= 6) {
-          const customerUser = {
-            id: "2",
-            name: email.split("@")[0],
-            email: email,
-            role: "customer" as UserRole,
-          }
-          setUser(customerUser)
-          localStorage.setItem("pavito-user", JSON.stringify(customerUser))
-          setIsLoading(false)
-          resolve(true)
-          return
-        }
+      const data = await response.json()
 
-        setIsLoading(false)
-        resolve(false)
-      }, 1000) // Simulação de delay de rede
-    })
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao fazer login")
+      }
+
+      // Salvar token e dados do usuário
+      setToken(data.token)
+      setUser(data.usuario)
+
+      localStorage.setItem("pavito-token", data.token)
+      localStorage.setItem("pavito-user", JSON.stringify(data.usuario))
+
+      return true
+    } catch (error) {
+      console.error("Erro de login:", error)
+      return false
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Função de logout
   const logout = () => {
     setUser(null)
+    setToken(null)
     localStorage.removeItem("pavito-user")
+    localStorage.removeItem("pavito-token")
   }
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

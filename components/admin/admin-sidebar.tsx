@@ -14,6 +14,7 @@ import {
   Settings,
   ShoppingBag,
   Tag,
+  User,
   Users,
 } from "lucide-react"
 
@@ -95,6 +96,11 @@ export default function AdminSidebar() {
       icon: <Users className="h-4 w-4" />,
     },
     {
+      title: "Administradores",
+      href: "/admin/cadastro",
+      icon: <User className="h-4 w-4" />,
+    },
+    {
       title: "Pagamentos",
       href: "/admin/pagamentos",
       icon: <CreditCard className="h-4 w-4" />,
@@ -126,10 +132,10 @@ export default function AdminSidebar() {
         <div className="border-t border-[#F4847B]/20 p-4">
           <div className="flex items-center gap-3 rounded-md px-3 py-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F4847B]/20">
-              <span className="text-sm font-medium text-[#631C21]">{user?.name.charAt(0).toUpperCase() || "A"}</span>
+              <span className="text-sm font-medium text-[#631C21]">{user?.nome.charAt(0).toUpperCase() || "A"}</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-[#631C21]">{user?.name || "Admin Velas"}</p>
+              <p className="text-sm font-medium text-[#631C21]">{user?.nome || "Admin Velas"}</p>
               <p className="text-xs text-[#631C21]/70">{user?.email || "admin@pavitovelas.com"}</p>
             </div>
           </div>
