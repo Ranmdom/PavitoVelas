@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { Flame } from "lucide-react"
-import CustomerLoginForm from "@/components/customer-login-form"
+import CustomerLoginForm from "@/components/costumer-login-form"
 
 export const metadata: Metadata = {
   title: "Login | Pavito Velas",
