@@ -5,7 +5,7 @@ import AdminLoginForm from "@/components/admin-login-form"
 
 export const metadata: Metadata = {
   title: "Login Administrativo | Pavito Velas",
-  description: "Acesso ao painel administrativo da Pavito Velas",
+  description: "Acesso ao painel administrativo da Pavito Velasa",
 }
 
 export default function AdminLoginPage() {
