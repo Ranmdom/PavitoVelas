@@ -159,7 +159,7 @@ export default function ProductForm({ open, onOpenChange }: ProductFormProps) {
               <Label htmlFor="category" className="text-[#631C21]">
                 Categoria <span className="text-red-500">*</span>
               </Label>
-              <Select value={formData.category} onValueChange={(value) => handleSelectChange("category", value)}>
+              <Select value={formData.category} onValueChange={(value : any) => handleSelectChange("category", value)}>
                 <SelectTrigger className="border-[#F4847B]/30">
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
