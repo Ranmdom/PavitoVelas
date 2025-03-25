@@ -1,10 +1,8 @@
-"use client"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import ProductsTable from "@/components/admin/products-table"
-import ProductForm from "@/components/admin/product-form" // <-- importa aqui
+import ProductForm from "@/components/admin/product-form" // <-- imporaaata aqui
 
 export const metadata = {
   title: "Gerenciar Produtos | Pavito Velas",
@@ -13,6 +11,7 @@ export const metadata = {
 
 export default function ProductsPage() {
   const [openForm, setOpenForm] = useState(false) // <-- controla o Dialog
+
 
   return (
     <div className="space-y-6">
