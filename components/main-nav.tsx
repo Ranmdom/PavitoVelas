@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Flame, LogIn, LogOut, Menu, Search, User, X } from "lucide-react"
+import { Flame, LogOut, Menu, Search, User, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -139,9 +139,8 @@ export default function MainNav() {
               ) : (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="relative text-[#631C21]">
-                      <LogIn className="h-5 w-5" />
-                      <span className="sr-only">Login</span>
+                    <Button variant="ghost" className="relative text-[#631C21]">
+                      Entrar
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
