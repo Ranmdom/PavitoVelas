@@ -1,4 +1,5 @@
 // app/api/auth/register/route.ts
+import 'dotenv/config'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcrypt'
