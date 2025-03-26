@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verifica se o email já existe
+    console.log('🔎 DATABASE_URL EM USO:', process.env.DATABASE_URL)
     const existe = await prisma.usuario.findUnique({ where: { email } })
     if (existe) {
       return NextResponse.json({ error: 'Email já cadastrado.' }, { status: 400 })
