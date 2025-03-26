@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Usar a public key (para upload no front)
+  process.env.NEXT_PUBLIC_SUPABASE_URL= "https://zgtqpisusyupfcegrcnh.supabase.co",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpndHFwaXN1c3l1cGZjZWdyY25oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MDk5MjQsImV4cCI6MjA1ODA4NTkyNH0.FyLsKds9F85RKAQLxRiXXgRLCgthWcZj3eQoKktvs7Q" // Usar a public key (para upload no front)
 )
 
 interface Iparams {
