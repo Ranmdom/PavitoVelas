@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     // Gera token com informações adicionais
     const token = signToken({
       userId: Number(usuario.usuarioId),
-      tipo: usuario.tipo,
+       tipo: usuario.tipo, 
     })
 
     return NextResponse.json(
