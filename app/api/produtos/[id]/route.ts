@@ -27,7 +27,7 @@ export async function GET() {
 
         return {
           id: String(produtoId),
-          name: produto.nome,
+          nome: produto.nome,
           category: produto.categoriaId ?? "Sem categoria",
           price: Number(produto.preco),
           fragrance: produto.fragrancia ?? "",
