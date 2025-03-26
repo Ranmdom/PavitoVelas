@@ -18,9 +18,10 @@ import { toast } from "@/hooks/use-toast"
 interface ProductFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onProdutoCriado?: () => void // nova prop
 }
 
-export default function ProductForm({ open, onOpenChange }: ProductFormProps) {
+export default function ProductForm({ open, onOpenChange , onProdutoCriado }: ProductFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("basic")
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -114,6 +115,10 @@ export default function ProductForm({ open, onOpenChange }: ProductFormProps) {
         title: "Produto cadastrado com sucesso",
         description: `O produto "${formData.name}" foi adicionado ao catálogo.`,
       })
+
+      //Atualiza os dados da tabela 
+
+      onProdutoCriado?.()
   
       // Limpar
       setFormData({

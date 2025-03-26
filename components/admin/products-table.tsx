@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { useEffect, useState } from "react"
 
 // Tipo para os dados do produto
 type Product = {
@@ -43,63 +44,7 @@ type Product = {
 }
 
 // Dados de exemplo
-const data: Product[] = [
-  {
-    id: "1",
-    name: "Vela Pêssego & Baunilha",
-    category: "Frutal",
-    price: 49.9,
-    stock: 15,
-    fragrance: "Pêssego & Baunilha",
-    weight: "250g",
-    createdAt: "2023-04-10",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    name: "Vela Lavanda & Bergamota",
-    category: "Floral",
-    price: 54.9,
-    stock: 8,
-    fragrance: "Lavanda & Bergamota",
-    weight: "250g",
-    createdAt: "2023-04-12",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "3",
-    name: "Vela Madeira & Âmbar",
-    category: "Amadeirado",
-    price: 59.9,
-    stock: 12,
-    fragrance: "Madeira & Âmbar",
-    weight: "300g",
-    createdAt: "2023-04-15",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "4",
-    name: "Vela Vanilla & Canela",
-    category: "Especiarias",
-    price: 49.9,
-    stock: 20,
-    fragrance: "Vanilla & Canela",
-    weight: "250g",
-    createdAt: "2023-04-18",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "5",
-    name: "Vela Limão & Manjericão",
-    category: "Cítrico",
-    price: 45.9,
-    stock: 5,
-    fragrance: "Limão & Manjericão",
-    weight: "200g",
-    createdAt: "2023-04-20",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-]
+
 
 // Definição das colunas
 const columns: ColumnDef<Product>[] = [
@@ -246,7 +191,8 @@ const columns: ColumnDef<Product>[] = [
   },
 ]
 
-export default function ProductsTable() {
+
+export default function ProductsTable({ data }: { data: Product[] }) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = useState({})
@@ -383,4 +329,5 @@ export default function ProductsTable() {
     </div>
   )
 }
+
 

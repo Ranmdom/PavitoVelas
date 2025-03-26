@@ -9,18 +9,39 @@ interface IParams {
   }
 }
 
-// GET /api/produtos/:id
-export async function GET(req: NextRequest, { params }: IParams) {
+export async function GET() {
   try {
-    const produtoId = Number(params.id)
-    const produto = await prisma.produto.findUnique({ where: { produtoId } })
-    if (!produto) {
-      return NextResponse.json({ error: 'produto não encontrado.' }, { status: 404 })
-    }
-    return jsonResponse(produto)
+    const produtos = await prisma.produto.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    const resultado = await Promise.all(
+      produtos.map(async (produto) => {
+        const produtoId = produto.produtoId
+
+        // Chama o próprio endpoint de fotos do produto
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/produtos/${produtoId}/fotos`)
+        const fotos = await res.json()
+        const imagemPrincipal = fotos?.[0]?.url || "/placeholder.svg"
+
+        return {
+          id: String(produtoId),
+          name: produto.nome,
+          category: produto.categoriaId ?? "Sem categoria",
+          price: Number(produto.preco),
+          fragrance: produto.fragrancia ?? "",
+          weight: produto.peso ? `${produto.peso}g` : "",
+          createdAt: produto.createdAt,
+          image: imagemPrincipal,
+        }
+      })
+    )
+
+    return jsonResponse(resultado)
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Erro ao buscar produto.' }, { status: 500 })
+    console.error("Erro ao listar produtos:", error)
+    return NextResponse.json({ error: 'Erro ao buscar produtos.' }, { status: 500 })
   }
 }
 
