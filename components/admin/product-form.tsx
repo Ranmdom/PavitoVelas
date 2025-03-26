@@ -26,16 +26,16 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
   const [activeTab, setActiveTab] = useState("basic")
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "",
-    weight: "",
-    fragrance: "",
-    burnTime: "",
-    stock: "",
-    dimensions: "",
-    ingredients: "",
+    nome: "",
+    descricao: "",
+    preco: "",
+    categoria: "",
+    peso: "",
+    fragancia: "",
+    tempoQueima: "",
+    estoque: "",
+    dimensao: "",
+    ingredientes: "",
     image: null as File | null,
   })
 
@@ -44,8 +44,8 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleSelectChange = (nome: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [nome]: value }))
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +86,7 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
     setIsLoading(true)
   
     try {
-      if (!formData.name || !formData.price || !formData.category || !formData.stock) {
+      if (!formData.nome || !formData.preco || !formData.categoria || !formData.estoque) {
         throw new Error("Por favor, preencha todos os campos obrigatórios.")
       }
   
@@ -113,7 +113,7 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
       // 3. Toast de sucesso
       toast({
         title: "Produto cadastrado com sucesso",
-        description: `O produto "${formData.name}" foi adicionado ao catálogo.`,
+        description: `O produto "${formData.nome}" foi adicionado ao catálogo.`,
       })
 
       //Atualiza os dados da tabela 
@@ -122,16 +122,16 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
   
       // Limpar
       setFormData({
-        name: "",
-        description: "",
-        price: "",
-        category: "",
-        weight: "",
-        fragrance: "",
-        burnTime: "",
-        stock: "",
-        dimensions: "",
-        ingredients: "",
+        nome: "",
+        descricao: "",
+        preco: "",
+        categoria: "",
+        peso: "",
+        fragancia: "",
+        tempoQueima: "",
+        estoque: "",
+        dimensao: "",
+        ingredientes: "",
         image: null,
       })
       setImagePreview(null)
@@ -179,13 +179,13 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
             <TabsContent value="basic" className="pt-4">
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-[#631C21]">
+                  <Label htmlFor="nome" className="text-[#631C21]">
                     Nome do Produto <span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
+                    id="nome"
+                    name="nome"
+                    value={formData.nome}
                     onChange={handleChange}
                     className="border-[#F4847B]/30"
                     required
@@ -194,16 +194,16 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-[#631C21]">
+                  <Label htmlFor="preco" className="text-[#631C21]">
                     Preço (R$) <span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    id="price"
-                    name="price"
+                    id="preco"
+                    name="preco"
                     type="number"
                     step="0.01"
                     min="0"
-                    value={formData.price}
+                    value={formData.preco}
                     onChange={handleChange}
                     className="border-[#F4847B]/30"
                     required
@@ -212,10 +212,10 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category" className="text-[#631C21]">
+                  <Label htmlFor="categoria" className="text-[#631C21]">
                     Categoria <span className="text-red-500">*</span>
                   </Label>
-                  <Select value={formData.category} onValueChange={(value) => handleSelectChange("category", value)}>
+                  <Select value={formData.categoria} onValueChange={(value) => handleSelectChange("categoria", value)}>
                     <SelectTrigger className="border-[#F4847B]/30">
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
@@ -230,15 +230,15 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="stock" className="text-[#631C21]">
+                  <Label htmlFor="estoque" className="text-[#631C21]">
                     Estoque <span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    id="stock"
-                    name="stock"
+                    id="estoque"
+                    name="estoque"
                     type="number"
                     min="0"
-                    value={formData.stock}
+                    value={formData.estoque}
                     onChange={handleChange}
                     className="border-[#F4847B]/30"
                     required
@@ -253,7 +253,7 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
                   <Textarea
                     id="description"
                     name="description"
-                    value={formData.description}
+                    value={formData.descricao}
                     onChange={handleChange}
                     className="min-h-[100px] border-[#F4847B]/30"
                     placeholder="Descreva o produto..."
@@ -281,7 +281,7 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
                   <Input
                     id="fragrance"
                     name="fragrance"
-                    value={formData.fragrance}
+                    value={formData.fragancia}
                     onChange={handleChange}
                     className="border-[#F4847B]/30"
                     placeholder="Ex: Pêssego & Baunilha"
@@ -295,7 +295,7 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
                   <Input
                     id="weight"
                     name="weight"
-                    value={formData.weight}
+                    value={formData.peso}
                     onChange={handleChange}
                     className="border-[#F4847B]/30"
                     placeholder="Ex: 250g"
@@ -309,7 +309,7 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
                   <Input
                     id="burnTime"
                     name="burnTime"
-                    value={formData.burnTime}
+                    value={formData.tempoQueima}
                     onChange={handleChange}
                     className="border-[#F4847B]/30"
                     placeholder="Ex: 45 horas"
@@ -323,7 +323,7 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
                   <Input
                     id="dimensions"
                     name="dimensions"
-                    value={formData.dimensions}
+                    value={formData.dimensao}
                     onChange={handleChange}
                     className="border-[#F4847B]/30"
                     placeholder="Ex: 10cm x 8cm"
@@ -337,7 +337,7 @@ export default function ProductForm({ open, onOpenChange , onProdutoCriado }: Pr
                   <Textarea
                     id="ingredients"
                     name="ingredients"
-                    value={formData.ingredients}
+                    value={formData.ingredientes}
                     onChange={handleChange}
                     className="min-h-[80px] border-[#F4847B]/30"
                     placeholder="Liste os ingredientes..."

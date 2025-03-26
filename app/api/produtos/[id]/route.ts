@@ -29,9 +29,10 @@ export async function GET() {
           id: String(produtoId),
           nome: produto.nome,
           category: produto.categoriaId ?? "Sem categoria",
+          descricao: produto.descricao ?? "",
           price: Number(produto.preco),
           fragrance: produto.fragrancia ?? "",
-          weight: produto.peso ? `${produto.peso}g` : "",
+          peso: produto.peso ? `${produto.peso}g` : "",
           createdAt: produto.createdAt,
           image: imagemPrincipal,
         }

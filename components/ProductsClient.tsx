@@ -9,12 +9,12 @@ import ProductForm from "@/components/admin/product-form"
 
 type Product = {
   id: string
-  name: string
-  category: string
-  price: number
-  stock: number
-  fragrance: string
-  weight: string
+  nome: string
+  categoria: string
+  preco: number
+  estoque: number
+  fragancia: string
+  peso: string
   createdAt: string
   image: string
 }

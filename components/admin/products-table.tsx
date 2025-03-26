@@ -1,6 +1,5 @@
 "use client"
 
-
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -28,39 +27,35 @@ import {
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
-// Tipo para os dados do produto
+// Tipo para os dados do produto, conforme o modelo Prisma "Produto"
 type Product = {
-  id: string
-  name: string
-  category: string
-  price: number
-  stock: number
-  fragrance: string
-  weight: string
+  produtoId: string
+  nome: string
+  categoria: string  // Vem de Produto.categoria?.nome na consulta (caso exista relacionamento)
+  preco: number
+  fragrancia?: string
+  peso?: number
   createdAt: string
-  image: string
+  image?: string    // Caso haja imagem, ou usar um placeholder
 }
 
-// Dados de exemplo
-
-
-// Definição das colunas
+// Definição das colunas para o React Table
 const columns: ColumnDef<Product>[] = [
   {
     id: "select",
     header: ({ table }) => (
       <Checkbox
         checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-        onCheckedChange={(value : any) => table.toggleAllPageRowsSelected(!!value)}
+        onCheckedChange={(value: any) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Selecionar tudo"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
-        onCheckedChange={(value : any) => row.toggleSelected(!!value)}
+        onCheckedChange={(value: any) => row.toggleSelected(!!value)}
         aria-label="Selecionar linha"
       />
     ),
@@ -74,7 +69,7 @@ const columns: ColumnDef<Product>[] = [
       <div className="relative h-10 w-10 overflow-hidden rounded-md">
         <Image
           src={row.getValue("image") || "/placeholder.svg"}
-          alt={row.getValue("name")}
+          alt={row.getValue("nome")}
           fill
           className="object-cover"
         />
@@ -83,48 +78,44 @@ const columns: ColumnDef<Product>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Nome
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    accessorKey: "nome",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        Nome
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => (
       <div>
-        <div className="font-medium">{row.getValue("name")}</div>
-        <div className="text-sm text-[#631C21]/70">ID: {row.original.id}</div>
+        <div className="font-medium">{row.getValue("nome")}</div>
+        <div className="text-sm text-[#631C21]/70">ID: {row.original.produtoId}</div>
       </div>
     ),
   },
   {
-    accessorKey: "category",
+    accessorKey: "categoria",
     header: "Categoria",
     cell: ({ row }) => (
       <Badge variant="outline" className="bg-[#F4847B]/10 text-[#631C21]">
-        {row.getValue("category")}
+        {(row.getValue("categoria") as { nome: string } | undefined)?.nome}
       </Badge>
     ),
   },
   {
-    accessorKey: "fragrance",
+    accessorKey: "fragrancia",
     header: "Fragrância",
-    cell: ({ row }) => <div>{row.getValue("fragrance")}</div>,
+    cell: ({ row }) => <div>{row.getValue("fragrancia")}</div>,
   },
   {
-    accessorKey: "price",
-    header: ({ column }) => {
-      return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Preço
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    accessorKey: "preco",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        Preço
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => {
-      const amount = Number.parseFloat(row.getValue("price"))
+      const amount = Number.parseFloat(row.getValue("preco"))
       const formatted = new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
@@ -133,28 +124,9 @@ const columns: ColumnDef<Product>[] = [
     },
   },
   {
-    accessorKey: "stock",
-    header: ({ column }) => {
-      return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Estoque
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => {
-      const stock = Number.parseInt(row.getValue("stock"))
-      return (
-        <div className={`font-medium ${stock <= 5 ? "text-red-600" : stock <= 10 ? "text-yellow-600" : ""}`}>
-          {stock}
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: "weight",
+    accessorKey: "peso",
     header: "Peso",
-    cell: ({ row }) => <div>{row.getValue("weight")}</div>,
+    cell: ({ row }) => <div>{row.getValue("peso")}</div>,
   },
   {
     accessorKey: "createdAt",
@@ -178,7 +150,9 @@ const columns: ColumnDef<Product>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.id)}>Copiar ID</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.produtoId)}>
+              Copiar ID
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Editar produto</DropdownMenuItem>
             <DropdownMenuItem>Gerenciar estoque</DropdownMenuItem>
@@ -190,7 +164,6 @@ const columns: ColumnDef<Product>[] = [
     },
   },
 ]
-
 
 export default function ProductsTable({ data }: { data: Product[] }) {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -219,8 +192,8 @@ export default function ProductsTable({ data }: { data: Product[] }) {
       <div className="flex items-center py-4">
         <Input
           placeholder="Filtrar produtos..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
+          value={(table.getColumn("nome")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("nome")?.setFilterValue(event.target.value)}
           className="max-w-sm border-[#F4847B]/30"
         />
         <DropdownMenu>
@@ -233,36 +206,32 @@ export default function ProductsTable({ data }: { data: Product[] }) {
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuItem
-                    key={column.id}
-                    className="capitalize"
-                    onClick={() => column.toggleVisibility(!column.getIsVisible())}
-                  >
-                    <Checkbox
-                      checked={column.getIsVisible()}
-                      className="mr-2"
-                      aria-label={`Mostrar coluna ${column.id}`}
-                    />
-                    {column.id === "name"
-                      ? "Nome"
-                      : column.id === "category"
-                        ? "Categoria"
-                        : column.id === "fragrance"
-                          ? "Fragrância"
-                          : column.id === "price"
-                            ? "Preço"
-                            : column.id === "stock"
-                              ? "Estoque"
-                              : column.id === "weight"
-                                ? "Peso"
-                                : column.id === "createdAt"
-                                  ? "Criado em"
-                                  : column.id}
-                  </DropdownMenuItem>
-                )
-              })}
+              .map((column) => (
+                <DropdownMenuItem
+                  key={column.id}
+                  className="capitalize"
+                  onClick={() => column.toggleVisibility(!column.getIsVisible())}
+                >
+                  <Checkbox
+                    checked={column.getIsVisible()}
+                    className="mr-2"
+                    aria-label={`Mostrar coluna ${column.id}`}
+                  />
+                  {column.id === "nome"
+                    ? "Nome"
+                    : column.id === "categoria"
+                    ? "Categoria"
+                    : column.id === "fragrancia"
+                    ? "Fragrância"
+                    : column.id === "preco"
+                    ? "Preço"
+                    : column.id === "peso"
+                    ? "Peso"
+                    : column.id === "createdAt"
+                    ? "Criado em"
+                    : column.id}
+                </DropdownMenuItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -271,13 +240,11 @@ export default function ProductsTable({ data }: { data: Product[] }) {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -286,7 +253,9 @@ export default function ProductsTable({ data }: { data: Product[] }) {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -329,5 +298,3 @@ export default function ProductsTable({ data }: { data: Product[] }) {
     </div>
   )
 }
-
-
