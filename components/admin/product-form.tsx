@@ -83,22 +83,39 @@ export default function ProductForm({ open, onOpenChange }: ProductFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-
+  
     try {
-      // Validação básica
       if (!formData.name || !formData.price || !formData.category || !formData.stock) {
         throw new Error("Por favor, preencha todos os campos obrigatórios.")
       }
-
-      // Simulação de envio para API
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
+  
+      // 1. Cria o produto (simulação atual)
+      const produtoCriado = await fetch("/api/produtos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+  
+      const { produtoId } = await produtoCriado.json()
+  
+      // 2. Faz upload da imagem, se existir
+      if (formData.image && produtoId) {
+        const imgForm = new FormData()
+        imgForm.append("file", formData.image)
+  
+        await fetch(`/api/produtos/${produtoId}/fotos`, {
+          method: "POST",
+          body: imgForm,
+        })
+      }
+  
+      // 3. Toast de sucesso
       toast({
         title: "Produto cadastrado com sucesso",
         description: `O produto "${formData.name}" foi adicionado ao catálogo.`,
       })
-
-      // Resetar formulário
+  
+      // Limpar
       setFormData({
         name: "",
         description: "",
@@ -118,13 +135,17 @@ export default function ProductForm({ open, onOpenChange }: ProductFormProps) {
     } catch (error) {
       toast({
         title: "Erro ao cadastrar produto",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao processar sua solicitação.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Ocorreu um erro ao processar sua solicitação.",
         variant: "destructive",
       })
     } finally {
       setIsLoading(false)
     }
   }
+  
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
