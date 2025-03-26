@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "cross-env PRISMA_DISABLE_PREPARED_STATEMENTS=true prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -44,6 +44,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
+    "cross-env": "^7.0.3",
     "date-fns": "4.1.0",
     "dotenv": "^16.4.7",
     "embla-carousel-react": "8.5.1",
