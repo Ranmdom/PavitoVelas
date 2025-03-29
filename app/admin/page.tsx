@@ -1,4 +1,4 @@
-// /app/admin
+// /app/admin/page.tsx
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DollarSign, Package, ShoppingBag, Users } from "lucide-react"
