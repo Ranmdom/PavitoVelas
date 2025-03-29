@@ -87,7 +87,7 @@ const SidebarProvider = React.forwardRef<
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
       },
       [setOpenProp, open]
-    )
+    )f
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
@@ -650,10 +650,13 @@ const SidebarMenuSkeleton = React.forwardRef<
     showIcon?: boolean
   }
 >(({ className, showIcon = false, ...props }, ref) => {
+  const [width, setWidth] = React.useState("50%");
   // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
-  }, [])
+  React.useEffect(() => {
+    // Atualiza com um valor aleatório após a montagem do componente no cliente
+    const randomWidth = `${Math.floor(Math.random() * 40) + 50}%`;
+    setWidth(randomWidth);
+  }, []);
 
   return (
     <div
