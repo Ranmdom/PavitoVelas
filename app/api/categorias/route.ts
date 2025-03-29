@@ -14,7 +14,11 @@ export async function GET(req: NextRequest) {
   // }
 
   try {
-    const usuarios = await prisma.categoria.findMany()
+    const usuarios = await prisma.categoria.findMany({
+      where: {
+      deletedAt: null
+      }
+    })
     return jsonResponse(usuarios)
   } catch (error) {
     console.error(error)

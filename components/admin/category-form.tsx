@@ -67,7 +67,7 @@ export default function CategoryForm({ open, onOpenChange, initialData, onSucces
       let response;
       if (initialData) {
         // Edição: usar PUT para atualizar
-        response = await fetch(`/api/usuarios/${initialData.categoriaId}`, {
+        response = await fetch(`/api/categorias/${initialData.categoriaId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

@@ -1,4 +1,4 @@
-// app/api/usuarios/[id]/route.ts
+// app/api/categorias/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { jsonResponse } from '@/utils/jsonResponse'
@@ -10,7 +10,7 @@ interface IParams {
   }
 }
 
-// GET /api/usuarios/:id
+// GET /api/categorias/:id
 export async function GET(req: NextRequest, { params }: IParams) {
   try {
     const categoriaId = Number(params.id)
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params }: IParams) {
   }
 }
 
-// PUT /api/usuarios/:id
+// PUT /api/categorias/:id
 export async function PUT(req: NextRequest, { params }: IParams) {
   try {
     const categoriaId = Number(params.id)
@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest, { params }: IParams) {
   }
 }
 
-// DELETE /api/usuarios/:id
+// DELETE /api/categorias/:id
 export async function DELETE(req: NextRequest, { params }: IParams) {
   try {
     const categoriaId = Number(params.id)

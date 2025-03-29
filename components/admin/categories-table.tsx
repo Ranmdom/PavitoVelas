@@ -54,8 +54,8 @@ export default function CategoriesTable({ onEditCategory }: CategoriesTableProps
       const json = await res.json()
       const categories: Category[] = json.map((cat: any) => ({
         categoriaId: cat.categoriaId.toString(),
-        name: cat.nome,
-        description: cat.descricao || "",
+        nome: cat.nome,
+        descricao: cat.descricao || "",
         productCount: cat.produtos ? cat.produtos.length : 0,
         createdAt: cat.createdAt,
       }))
@@ -75,7 +75,7 @@ export default function CategoriesTable({ onEditCategory }: CategoriesTableProps
   const handleDelete = async (category: Category) => {
     if (confirm(`Tem certeza que deseja excluir a categoria "${category.nome}"?`)) {
       try {
-        const res = await fetch(`/api/usuarios/${category.categoriaId}`, {
+        const res = await fetch(`/api/categorias/${category.categoriaId}`, {
           method: "DELETE",
         })
         const json = await res.json()
@@ -119,7 +119,7 @@ export default function CategoriesTable({ onEditCategory }: CategoriesTableProps
       enableHiding: false,
     },
     {
-      accessorKey: "name",
+      accessorKey: "nome",
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Nome
@@ -128,15 +128,15 @@ export default function CategoriesTable({ onEditCategory }: CategoriesTableProps
       ),
       cell: ({ row }) => (
         <div>
-          <div className="font-medium">{row.getValue("name")}</div>
+          <div className="font-medium">{row.getValue("nome")}</div>
           <div className="text-sm text-[#631C21]/70">ID: {row.original.categoriaId}</div>
         </div>
       ),
     },
     {
-      accessorKey: "description",
+      accessorKey: "descricao",
       header: "Descrição",
-      cell: ({ row }) => <div>{row.getValue("description")}</div>,
+      cell: ({ row }) => <div>{row.getValue("descricao")}</div>,
     },
     {
       accessorKey: "productCount",
@@ -213,8 +213,8 @@ export default function CategoriesTable({ onEditCategory }: CategoriesTableProps
       <div className="flex items-center py-4">
         <Input
           placeholder="Filtrar categorias..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
+          value={(table.getColumn("nome")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("nome")?.setFilterValue(event.target.value)}
           className="max-w-sm border-[#F4847B]/30"
         />
       </div>
