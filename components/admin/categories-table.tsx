@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -26,148 +26,166 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { toast } from "@/hooks/use-toast"
 
-// Tipo para os dados da categoria
-type Category = {
-  id: string
-  name: string
-  description: string
+export type Category = {
+  categoriaId: string
+  nome: string
+  descricao: string
   productCount: number
   createdAt: string
 }
 
-// Dados de exemplo
-const data: Category[] = [
-  {
-    id: "1",
-    name: "Frutal",
-    description: "Velas com fragrâncias de frutas",
-    productCount: 8,
-    createdAt: "2023-03-15",
-  },
-  {
-    id: "2",
-    name: "Floral",
-    description: "Velas com fragrâncias de flores",
-    productCount: 12,
-    createdAt: "2023-03-15",
-  },
-  {
-    id: "3",
-    name: "Amadeirado",
-    description: "Velas com fragrâncias amadeiradas",
-    productCount: 6,
-    createdAt: "2023-03-16",
-  },
-  {
-    id: "4",
-    name: "Especiarias",
-    description: "Velas com fragrâncias de especiarias",
-    productCount: 5,
-    createdAt: "2023-03-18",
-  },
-  {
-    id: "5",
-    name: "Cítrico",
-    description: "Velas com fragrâncias cítricas",
-    productCount: 4,
-    createdAt: "2023-03-20",
-  },
-]
+interface CategoriesTableProps {
+  onEditCategory: (category: Category) => void
+}
 
-// Definição das colunas
-const columns: ColumnDef<Category>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Selecionar tudo"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Selecionar linha"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
+export default function CategoriesTable({ onEditCategory }: CategoriesTableProps) {
+  const [data, setData] = useState<Category[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [rowSelection, setRowSelection] = useState({})
+
+  // Função para buscar categorias na API
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/categorias")
+      const json = await res.json()
+      const categories: Category[] = json.map((cat: any) => ({
+        categoriaId: cat.categoriaId.toString(),
+        name: cat.nome,
+        description: cat.descricao || "",
+        productCount: cat.produtos ? cat.produtos.length : 0,
+        createdAt: cat.createdAt,
+      }))
+      setData(categories)
+    } catch (error) {
+      console.error("Erro ao buscar categorias:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  // Função para excluir categoria
+  const handleDelete = async (category: Category) => {
+    if (confirm(`Tem certeza que deseja excluir a categoria "${category.nome}"?`)) {
+      try {
+        const res = await fetch(`/api/usuarios/${category.categoriaId}`, {
+          method: "DELETE",
+        })
+        const json = await res.json()
+        if (!res.ok) {
+          throw new Error(json.error || "Erro ao excluir categoria.")
+        }
+        toast({
+          title: "Categoria excluída",
+          description: `A categoria "${category.nome}" foi excluída.`,
+        })
+        fetchCategories()
+      } catch (error) {
+        toast({
+          title: "Erro ao excluir categoria",
+          description: error instanceof Error ? error.message : "Ocorreu um erro.",
+          variant: "destructive",
+        })
+      }
+    }
+  }
+
+  // Definição das colunas da tabela
+  const columns: ColumnDef<Category>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Selecionar tudo"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Selecionar linha"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Nome
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      ),
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium">{row.getValue("name")}</div>
+          <div className="text-sm text-[#631C21]/70">ID: {row.original.categoriaId}</div>
+        </div>
+      ),
     },
-    cell: ({ row }) => (
-      <div>
-        <div className="font-medium">{row.getValue("name")}</div>
-        <div className="text-sm text-[#631C21]/70">ID: {row.original.id}</div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "description",
-    header: "Descrição",
-    cell: ({ row }) => <div>{row.getValue("description")}</div>,
-  },
-  {
-    accessorKey: "productCount",
-    header: ({ column }) => {
-      return (
+    {
+      accessorKey: "description",
+      header: "Descrição",
+      cell: ({ row }) => <div>{row.getValue("description")}</div>,
+    },
+    {
+      accessorKey: "productCount",
+      header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Produtos
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      ),
+      cell: ({ row }) => <div className="text-center">{row.getValue("productCount")}</div>,
     },
-    cell: ({ row }) => <div className="text-center">{row.getValue("productCount")}</div>,
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Criado em",
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("createdAt"))
-      return <div>{date.toLocaleDateString("pt-BR")}</div>
+    {
+      accessorKey: "createdAt",
+      header: "Criado em",
+      cell: ({ row }) => {
+        const date = new Date(row.getValue("createdAt"))
+        return <div>{date.toLocaleDateString("pt-BR")}</div>
+      },
     },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const category = row.original
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(category.id)}>Copiar ID</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Editar categoria</DropdownMenuItem>
-            <DropdownMenuItem>Ver produtos</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">Excluir categoria</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const category = row.original
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Abrir menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Ações</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(category.categoriaId)}>
+                Copiar ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onEditCategory(category)}>
+                Editar categoria
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDelete(category)}>
+                Excluir categoria
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
     },
-  },
-]
-
-export default function CategoriesTable() {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [rowSelection, setRowSelection] = useState({})
+  ]
 
   const table = useReactTable({
     data,
@@ -186,6 +204,10 @@ export default function CategoriesTable() {
     },
   })
 
+  if (isLoading) {
+    return <div>Carregando categorias...</div>
+  }
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
@@ -195,55 +217,17 @@ export default function CategoriesTable() {
           onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
           className="max-w-sm border-[#F4847B]/30"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto border-[#F4847B]/30">
-              Colunas <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuItem
-                    key={column.id}
-                    className="capitalize"
-                    onClick={() => column.toggleVisibility(!column.getIsVisible())}
-                  >
-                    <Checkbox
-                      checked={column.getIsVisible()}
-                      className="mr-2"
-                      aria-label={`Mostrar coluna ${column.id}`}
-                    />
-                    {column.id === "name"
-                      ? "Nome"
-                      : column.id === "description"
-                        ? "Descrição"
-                        : column.id === "productCount"
-                          ? "Produtos"
-                          : column.id === "createdAt"
-                            ? "Criado em"
-                            : column.id}
-                  </DropdownMenuItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       <div className="rounded-md border border-[#F4847B]/20">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -295,4 +279,3 @@ export default function CategoriesTable() {
     </div>
   )
 }
-

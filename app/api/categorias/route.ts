@@ -1,7 +1,7 @@
 // app/api/usuarios/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getTokenFromHeader, verifyToken } from '@/lib/auth'
+import { extractTokenFromHeader, verifyToken } from '@/lib/auth'
 // import bcrypt from 'bcrypt' // caso queira hash de senha aqui também
 import { jsonResponse } from '@/utils/jsonResponse'
 
