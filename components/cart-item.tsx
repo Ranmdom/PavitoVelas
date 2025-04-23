@@ -29,7 +29,7 @@ export default function CartItem({ item, compact = false }: CartItemProps) {
     return (
       <div className="flex items-center gap-3 py-2">
         <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border bg-[#FBE1D0]/50">
-          <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-contain p-2" />
+          <Image src={item.image || "/templates/vela-1.jpeg"} alt={item.name} fill className="object-contain p-2" />
         </div>
         <div className="flex-1 min-w-0">
           <Link
@@ -61,7 +61,7 @@ export default function CartItem({ item, compact = false }: CartItemProps) {
   return (
     <div className="flex items-start gap-4 py-4">
       <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border bg-[#FBE1D0]/50">
-        <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-contain p-2" />
+        <Image src={item.image || "/templates/vela-1.jpeg"} alt={item.name} fill className="object-contain p-2" />
       </div>
       <div className="flex flex-1 flex-col">
         <div className="flex justify-between">

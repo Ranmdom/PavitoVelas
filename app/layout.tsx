@@ -9,6 +9,8 @@ import { CartProvider } from "@/context/cart-context"
 import { AuthProvider } from "@/context/auth-context"
 import MainNav from "@/components/main-nav"
 
+import LoadingIndicator from "@/components/loading-indicator"
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -28,6 +30,7 @@ export default function RootLayout({
           <AuthProvider>
             <CartProvider>
               <MainNav />
+              <LoadingIndicator/>
               {children}
               <footer className="w-full border-t border-[#F4847B]/10 bg-[#FBE1D0]/60 py-6">
                 <div className="container mx-auto px-4 text-center text-sm text-[#631C21]/70">

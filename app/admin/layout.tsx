@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react"
 import AdminSidebar from "@/components/admin/admin-sidebar"
 import { useAuth } from "@/context/auth-context"
 import { motion, AnimatePresence } from "framer-motion"
+import LoadingIndicator from "@/components/loading-indicator"
 
 const containerVariants = {
   hidden: { opacity: 0, x: 50 },
@@ -44,6 +45,7 @@ export default function AdminLayout({
   return (
     <div className="flex min-h-screen bg-[#FBE1D0]/30">
       <AdminSidebar />
+      <LoadingIndicator />
       <div className="flex-1 overflow-auto">
         <div className="container mx-auto p-6">
           <AnimatePresence mode="wait">

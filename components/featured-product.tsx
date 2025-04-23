@@ -26,7 +26,7 @@ export default function FeaturedProduct() {
       <div className="relative grid gap-8 overflow-hidden rounded-xl border border-[#F4847B]/20 bg-white p-6 shadow-lg md:grid-cols-2 md:p-8">
         <div className="relative aspect-square overflow-hidden rounded-lg bg-gradient-to-br from-[#FBE1D0] to-[#F4847B]/20">
           <Image
-            src="/placeholder.svg?height=500&width=500"
+            src="/templates/vela-1.jpeg?height=500&width=500"
             alt="Vela Edição Especial"
             fill
             className="object-contain p-6"

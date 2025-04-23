@@ -39,7 +39,7 @@ export default function Home() {
           <div className="flex justify-center md:justify-end">
             <div className="relative aspect-square w-72 overflow-hidden rounded-full bg-[#F1889C]/20 p-2 sm:w-80 md:w-96">
               <Image
-                src="/placeholder.svg?height=400&width=400"
+                src="/templates/vela-1.jpeg?height=400&width=400"
                 width={400}
                 height={400}
                 alt="Vela artesanal decorativa"
@@ -71,7 +71,7 @@ export default function Home() {
               id="1"
               name="Vela Pêssego & Baunilha"
               price={49.9}
-              image="/placeholder.svg?height=300&width=300"
+              image="/templates/vela-1.jpeg?height=300&width=300"
               category="Frutal"
               weight="250g"
               color="#F4847B"
@@ -80,7 +80,7 @@ export default function Home() {
               id="2"
               name="Vela Lavanda & Bergamota"
               price={54.9}
-              image="/placeholder.svg?height=300&width=300"
+              image="/templates/vela-1.jpeg?height=300&width=300"
               category="Floral"
               weight="250g"
               color="#CD4E65"
@@ -89,7 +89,7 @@ export default function Home() {
               id="3"
               name="Vela Madeira & Âmbar"
               price={59.9}
-              image="/placeholder.svg?height=300&width=300"
+              image="/templates/vela-1.jpeg?height=300&width=300"
               category="Amadeirado"
               weight="300g"
               color="#882335"
@@ -98,7 +98,7 @@ export default function Home() {
               id="4"
               name="Vela Vanilla & Canela"
               price={49.9}
-              image="/placeholder.svg?height=300&width=300"
+              image="/templates/vela-1.jpeg?height=300&width=300"
               category="Especiarias"
               weight="250g"
               color="#D36A6A"
