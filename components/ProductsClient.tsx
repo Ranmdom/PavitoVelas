@@ -8,13 +8,13 @@ import ProductsTable from "@/components/admin/products-table"
 import ProductForm from "@/components/admin/product-form"
 
 type Product = {
-  id: string
+  produtoId: string
   nome: string
-  categoria: string
+  categoria: string           // <- já é string, certo!
   preco: number
-  estoque: number
+  estoque?: number
   fragancia: string
-  peso: string
+  peso: number | undefined
   createdAt: string
   image: string
 }
@@ -27,7 +27,22 @@ export default function ProductsClient() {
     try {
       const res = await fetch("/api/produtos")
       const dados = await res.json()
-      setProdutos(dados)
+      console.log("Dados recebidos:", dados)
+      setProdutos(
+        dados.map((produto: any) => ({
+          ...produto,
+          produtoId: produto.id,
+          nome: produto.nome,
+          categoria: produto.categoriaNome,  // <- AJUSTADO AQUI!
+          preco: produto.preco,
+          estoque: produto.estoque,
+          fragrancia: produto.fragrancia,
+          peso: produto.peso,
+          createdAt: produto.createdAt,
+          image: produto.image,
+        }))
+      )
+      
     } catch (err) {
       console.error("Erro ao buscar produtos:", err)
     }

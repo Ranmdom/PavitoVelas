@@ -9,42 +9,43 @@ interface IParams {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest, { params }: IParams) {
   try {
-    const produtos = await prisma.produto.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: 'desc' },
+    const produtoId = Number(params.id)
+
+    const produto = await prisma.produto.findUnique({
+      where: { produtoId, deletedAt: null },
+      include: { categoria: true },
     })
 
-    const resultado = await Promise.all(
-      produtos.map(async (produto) => {
-        const produtoId = produto.produtoId
+    if (!produto) {
+      return NextResponse.json({ error: 'Produto não encontrado.' }, { status: 404 })
+    }
 
-        // Chama o próprio endpoint de fotos do produto
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/produtos/${produtoId}/fotos`)
-        const fotos = await res.json()
-        const imagemPrincipal = fotos?.[0]?.url || "/placeholder.svg"
+    // Buscar imagem (caso você tenha essa lógica)
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/produtos/${produtoId}/fotos`)
+    const fotos = await res.json()
+    const imagemPrincipal = fotos?.[0]?.url || "/placeholder.svg"
 
-        return {
-          id: String(produtoId),
-          nome: produto.nome,
-          category: produto.categoriaId ?? "Sem categoria",
-          descricao: produto.descricao ?? "",
-          price: Number(produto.preco),
-          fragrance: produto.fragrancia ?? "",
-          peso: produto.peso ? `${produto.peso}g` : "",
-          createdAt: produto.createdAt,
-          image: imagemPrincipal,
-        }
-      })
-    )
+    const resultado = {
+      id: String(produto.produtoId),
+      categoriaId: produto.categoria?.categoriaId || null,
+      categoriaNome: produto.categoria?.nome || "Categoria não cadastrada",
+      fragrancia: produto.fragrancia || "Fragrância não cadastrada",
+      preco: Number(produto.preco),
+      peso: produto.peso,
+      createdAt: produto.createdAt,
+      image: imagemPrincipal,
+    }
 
     return jsonResponse(resultado)
   } catch (error) {
-    console.error("Erro ao listar produtos:", error)
-    return NextResponse.json({ error: 'Erro ao buscar produtos.' }, { status: 500 })
+    console.error("Erro ao buscar produto:", error)
+    return NextResponse.json({ error: 'Erro ao buscar produto.' }, { status: 500 })
   }
 }
+
+
 
 // PUT /api/produtos/:id
 export async function PUT(req: NextRequest, { params }: IParams) {

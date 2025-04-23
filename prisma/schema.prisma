@@ -47,6 +47,7 @@ model Produto {
   updatedAt   DateTime     @default(now())
   deletedAt   DateTime?
   itensPedido ItemPedido[]
+  estoque Int?
   categoria   Categoria?   @relation(fields: [categoriaId], references: [categoriaId])
 }
 

@@ -97,7 +97,7 @@ const columns: ColumnDef<Product>[] = [
     header: "Categoria",
     cell: ({ row }) => (
       <Badge variant="outline" className="bg-[#F4847B]/10 text-[#631C21]">
-        {(row.getValue("categoria") as { nome: string } | undefined)?.nome}
+        {row.getValue("categoria")}
       </Badge>
     ),
   },
