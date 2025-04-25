@@ -22,6 +22,12 @@ type Product = {
 export default function ProductsClient() {
   const [openForm, setOpenForm] = useState(false)
   const [produtos, setProdutos] = useState<Product[]>([])
+  const [produtoEditando, setProdutoEditando] = useState<string | undefined>(undefined)
+
+  const abrirEdicaoProduto = (produtoId: string) => {
+    setProdutoEditando(produtoId)
+    setOpenForm(true)
+  }
 
   const buscarProdutos = async () => {
     try {
@@ -33,7 +39,7 @@ export default function ProductsClient() {
           ...produto,
           produtoId: produto.id,
           nome: produto.nome,
-          categoria: produto.categoriaNome,  // <- AJUSTADO AQUI!
+          categoria: produto.categoriaNome,
           preco: produto.preco,
           estoque: produto.estoque,
           fragrancia: produto.fragrancia,
@@ -65,12 +71,13 @@ export default function ProductsClient() {
         </Button>
       </div>
 
-      <ProductsTable data={produtos} />
+      <ProductsTable data={produtos} onEditar={abrirEdicaoProduto}/>
 
       <ProductForm
         open={openForm}
         onOpenChange={setOpenForm}
-        onProdutoCriado={buscarProdutos} // Atualiza a tabela após novo cadastro
+        onProdutoCriado={buscarProdutos}
+        produtoId={produtoEditando}
       />
     </div>
   )

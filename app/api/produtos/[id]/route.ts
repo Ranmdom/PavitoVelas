@@ -9,8 +9,9 @@ interface IParams {
   }
 }
 
-export async function GET(req: NextRequest, { params }: IParams) {
+export async function GET(req: NextRequest, context: IParams) {
   try {
+    const { params } = await context
     const produtoId = Number(params.id)
 
     const produto = await prisma.produto.findUnique({
@@ -23,19 +24,20 @@ export async function GET(req: NextRequest, { params }: IParams) {
     }
 
     // Buscar imagem (caso você tenha essa lógica)
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/produtos/${produtoId}/fotos`)
-    const fotos = await res.json()
-    const imagemPrincipal = fotos?.[0]?.url || "/placeholder.svg"
 
     const resultado = {
       id: String(produto.produtoId),
+      nome: produto.nome,
+      estoque: produto.estoque,
+      descricao: produto.descricao,
+      categoria: produto.categoria?.nome || "Categoria não cadastrada",
       categoriaId: produto.categoria?.categoriaId || null,
       categoriaNome: produto.categoria?.nome || "Categoria não cadastrada",
       fragrancia: produto.fragrancia || "Fragrância não cadastrada",
       preco: Number(produto.preco),
       peso: produto.peso,
       createdAt: produto.createdAt,
-      image: imagemPrincipal,
+      imagens: produto.imagens ? produto.imagens : [],
     }
 
     return jsonResponse(resultado)
@@ -47,9 +49,9 @@ export async function GET(req: NextRequest, { params }: IParams) {
 
 
 
-// PUT /api/produtos/:id
-export async function PUT(req: NextRequest, { params }: IParams) {
+export async function PUT(req: NextRequest, context: IParams) {
   try {
+    const { params } = await context
     const produtoId = Number(params.id)
     const data = await req.json()
 
@@ -66,10 +68,9 @@ export async function PUT(req: NextRequest, { params }: IParams) {
     return NextResponse.json({ error: 'Erro ao atualizar produto.' }, { status: 500 })
   }
 }
-
-// DELETE /api/produtos/:id
-export async function DELETE(req: NextRequest, { params }: IParams) {
+export async function DELETE(req: NextRequest, context: IParams) {
   try {
+    const { params } = await context
     const produtoId = Number(params.id)
 
     // Soft-delete

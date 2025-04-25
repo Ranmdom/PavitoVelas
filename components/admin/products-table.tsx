@@ -41,134 +41,138 @@ type Product = {
   image?: string    // Caso haja imagem, ou usar um placeholder
 }
 
-// Definição das colunas para o React Table
-const columns: ColumnDef<Product>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-        onCheckedChange={(value: any) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Selecionar tudo"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value: any) => row.toggleSelected(!!value)}
-        aria-label="Selecionar linha"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "image",
-    header: "",
-    cell: ({ row }) => (
-      <div className="relative h-10 w-10 overflow-hidden rounded-md">
-        <Image
-          src={row.getValue("image") || "/placeholder.svg"}
-          alt={row.getValue("nome")}
-          fill
-          className="object-cover"
-        />
-      </div>
-    ),
-    enableSorting: false,
-  },
-  {
-    accessorKey: "nome",
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Nome
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <div>
-        <div className="font-medium">{row.getValue("nome")}</div>
-        <div className="text-sm text-[#631C21]/70">ID: {row.original.produtoId}</div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "categoria",
-    header: "Categoria",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="bg-[#F4847B]/10 text-[#631C21]">
-        {row.getValue("categoria")}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "fragrancia",
-    header: "Fragrância",
-    cell: ({ row }) => <div>{row.getValue("fragrancia")}</div>,
-  },
-  {
-    accessorKey: "preco",
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Preço
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const amount = Number.parseFloat(row.getValue("preco"))
-      const formatted = new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(amount)
-      return <div className="font-medium">{formatted}</div>
-    },
-  },
-  {
-    accessorKey: "peso",
-    header: "Peso",
-    cell: ({ row }) => <div>{row.getValue("peso")}</div>,
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Criado em",
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("createdAt"))
-      return <div>{date.toLocaleDateString("pt-BR")}</div>
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const product = row.original
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.produtoId)}>
-              Copiar ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Editar produto</DropdownMenuItem>
-            <DropdownMenuItem>Gerenciar estoque</DropdownMenuItem>
-            <DropdownMenuItem>Ver detalhes</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">Excluir produto</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  },
-]
 
-export default function ProductsTable({ data }: { data: Product[] }) {
+
+export default function ProductsTable({ data, onEditar }: { data: Product[], onEditar: (produtoId: string) => void }) {
+
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = useState({})
+
+  // Definição das colunas para o React Table
+  const columns: ColumnDef<Product>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={(value: any) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Selecionar tudo"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value: any) => row.toggleSelected(!!value)}
+          aria-label="Selecionar linha"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "image",
+      header: "",
+      cell: ({ row }) => (
+        <div className="relative h-10 w-10 overflow-hidden rounded-md">
+          <Image
+            src={row.getValue("image") || "/placeholder.svg"}
+            alt={row.getValue("nome")}
+            fill
+            className="object-cover"
+          />
+        </div>
+      ),
+      enableSorting: false,
+    },
+    {
+      accessorKey: "nome",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Nome
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium">{row.getValue("nome")}</div>
+          <div className="text-sm text-[#631C21]/70">ID: {row.original.produtoId}</div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "categoria",
+      header: "Categoria",
+      cell: ({ row }) => (
+        <Badge variant="outline" className="bg-[#F4847B]/10 text-[#631C21]">
+          {row.getValue("categoria")}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "fragrancia",
+      header: "Fragrância",
+      cell: ({ row }) => <div>{row.getValue("fragrancia")}</div>,
+    },
+    {
+      accessorKey: "preco",
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Preço
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const amount = Number.parseFloat(row.getValue("preco"))
+        const formatted = new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }).format(amount)
+        return <div className="font-medium">{formatted}</div>
+      },
+    },
+    {
+      accessorKey: "peso",
+      header: "Peso",
+      cell: ({ row }) => <div>{row.getValue("peso")}</div>,
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Criado em",
+      cell: ({ row }) => {
+        const date = new Date(row.getValue("createdAt"))
+        return <div>{date.toLocaleDateString("pt-BR")}</div>
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const product = row.original
+      
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Abrir menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Ações</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.produtoId)}>
+                Copiar ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onEditar(product.produtoId)}>
+                Editar produto
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-red-600">Excluir produto</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    },
+  ]
 
   const table = useReactTable({
     data,
@@ -186,6 +190,9 @@ export default function ProductsTable({ data }: { data: Product[] }) {
       rowSelection,
     },
   })
+
+  
+
 
   return (
     <div className="w-full">

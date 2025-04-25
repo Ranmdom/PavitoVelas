@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       }
       produto = await prisma.produto.create({
         data: {
-          ...data,
+          nome: data.nome,
           estoque: data.estoque ? Number(data.estoque) : undefined,
           descricao: data.descricao,
           preco: new Prisma.Decimal(data.preco),
@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
           peso: data.peso ? new Prisma.Decimal(data.peso) : undefined,
           tempoQueima: data.tempoQueima ? Number(data.tempoQueima) : undefined,
           deletedAt: null,
+          categoria: { connect: { categoriaId: data.categoriaId } },
         },
       })
     }
