@@ -73,18 +73,24 @@ export default function ProductsTable({ data, onEditar }: { data: Product[], onE
     {
       accessorKey: "image",
       header: "",
-      cell: ({ row }) => (
-        <div className="relative h-10 w-10 overflow-hidden rounded-md">
-          <Image
-            src={row.getValue("image") || "/placeholder.svg"}
-            alt={row.getValue("nome")}
-            fill
-            className="object-cover"
-          />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const raw = row.getValue("image") as unknown
+        const srcArray = Array.isArray(raw) ? raw : [] // Verifica se é um array 
+        const src = srcArray.length > 0 ? srcArray[0] : "/placeholder.svg"
+    
+        return (
+          <div className="relative h-10 w-10 overflow-hidden rounded-md">
+            <img
+              src={src}
+              alt={String(row.getValue("nome"))}
+              className="object-cover w-full h-full"
+            />
+          </div>
+        )
+      },
       enableSorting: false,
-    },
+    }
+    ,
     {
       accessorKey: "nome",
       header: ({ column }) => (

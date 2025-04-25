@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       preco: Number(produto.preco),
       peso: produto.peso,
       createdAt: produto.createdAt,
-      //image: produto.image || "/placeholder.svg", // ajuste conforme sua lógica de imagem
+      image: produto.imagens || "/placeholder.svg", // ajuste conforme sua lógica de imagem
     }))
 
     return jsonResponse(resultado)
@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
           tempoQueima: data.tempoQueima ? Number(data.tempoQueima) : undefined,
           deletedAt: null,
           categoria: { connect: { categoriaId: data.categoriaId } },
+          imagens: data.imagens || [], // Adiciona o campo de imagens
         },
       })
     }
