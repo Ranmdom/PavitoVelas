@@ -109,16 +109,6 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      <Card className="bg-white/80">
-        <CardHeader>
-          <CardTitle className="text-[#631C21]">Pedidos Recentes</CardTitle>
-          <CardDescription className="text-[#631C21]/70">Últimos pedidos realizados na plataforma</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <RecentOrdersTable />
-        </CardContent>
-      </Card>
     </div>
   )
 }
