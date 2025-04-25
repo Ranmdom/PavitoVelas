@@ -44,17 +44,23 @@ export async function GET(req: NextRequest, context: IParams) {
 
     // Converte todas as imagens em URLs públicas
     const imagens = (produtos.imagens ?? []).map((p: string) => toPublicUrl(p)).filter(Boolean)
+
     const resultado = {
       produtoId: String(produtos.produtoId),
       nome: produtos.nome,
-      categoria: produtos.categoria?.nome ?? "Sem categoria",
       preco: Number(produtos.preco),
-      fragrancia: produtos.fragrancia,
-      peso: produtos.peso,
-      createdAt: produtos.createdAt,
-      image: imagens[0] ?? null,      
-      imagens,                        // (opcional) array completo se quiser
+      estoque: produtos.estoque ?? 0,
+      categoriaNome: produtos.categoria?.nome ?? "Sem categoria",
+      fragrancia: produtos.fragrancia ?? "Não informado",
+      descricao: produtos.descricao ?? "Sem descrição",
+      tempoQueima: produtos.tempoQueima ?? null,              // 👈 aqui!
+      peso: produtos.peso ?? null,
+      altura: produtos.altura ?? null,                        // 👈 aqui!
+      largura: produtos.largura ?? null,                      // 👈 aqui!
+      imagens,
+      image: imagens[0] ?? null,
     }
+
 
     return jsonResponse(resultado)
   } catch (error) {
