@@ -1,127 +1,38 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronDown, Grid3X3, LayoutGrid } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import ProductCard from "@/components/product-card"
 
+interface Product {
+  id: string
+  nome: string
+  preco: number
+  image: string[] // porque no seu back é array!
+  categoriaNome: string
+  peso?: string | number | null
+  fragrancia?: string
+}
+
 export default function ProductGrid() {
+  const [products, setProducts] = useState<Product[]>([])
   const [sortOption, setSortOption] = useState("relevancia")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
-  // Dados simulados de produtos
-  const products = [
-    {
-      id: "1",
-      name: "Vela Pêssego & Baunilha",
-      price: 49.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Frutal",
-      weight: "250g",
-      color: "#F4847B",
-    },
-    {
-      id: "2",
-      name: "Vela Lavanda & Bergamota",
-      price: 54.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Floral",
-      weight: "250g",
-      color: "#CD4E65",
-    },
-    {
-      id: "3",
-      name: "Vela Madeira & Âmbar",
-      price: 59.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Amadeirado",
-      weight: "300g",
-      color: "#882335",
-    },
-    {
-      id: "4",
-      name: "Vela Vanilla & Canela",
-      price: 49.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Especiarias",
-      weight: "250g",
-      color: "#D36A6A",
-    },
-    {
-      id: "5",
-      name: "Vela Limão & Manjericão",
-      price: 45.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Cítrico",
-      weight: "200g",
-      color: "#F4847B",
-    },
-    {
-      id: "6",
-      name: "Vela Rosa & Jasmim",
-      price: 59.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Floral",
-      weight: "250g",
-      color: "#CD4E65",
-    },
-    {
-      id: "7",
-      name: "Vela Sândalo & Cedro",
-      price: 69.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Amadeirado",
-      weight: "350g",
-      color: "#882335",
-    },
-    {
-      id: "8",
-      name: "Vela Maçã & Canela",
-      price: 49.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Especiarias",
-      weight: "250g",
-      color: "#D36A6A",
-    },
-    {
-      id: "9",
-      name: "Vela Laranja & Cravo",
-      price: 45.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Cítrico",
-      weight: "200g",
-      color: "#F4847B",
-    },
-    {
-      id: "10",
-      name: "Vela Gardênia & Lírio",
-      price: 59.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Floral",
-      weight: "250g",
-      color: "#CD4E65",
-    },
-    {
-      id: "11",
-      name: "Vela Patchouli & Vetiver",
-      price: 69.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Amadeirado",
-      weight: "350g",
-      color: "#882335",
-    },
-    {
-      id: "12",
-      name: "Vela Cardamomo & Gengibre",
-      price: 54.9,
-      image: "/templates/vela-1.jpeg?height=300&width=300",
-      category: "Especiarias",
-      weight: "250g",
-      color: "#D36A6A",
-    },
-  ]
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch("/api/produtos")
+        const data = await res.json()
+        setProducts(data)
+      } catch (error) {
+        console.error("Erro ao buscar produtos:", error)
+      }
+    }
+    fetchProducts()
+  }, [])
 
   return (
     <div>
@@ -204,12 +115,16 @@ export default function ProductGrid() {
           <ProductCard
             key={product.id}
             id={product.id}
-            name={product.name}
-            price={product.price}
-            image={product.image}
-            category={product.category}
-            weight={product.weight}
-            color={product.color}
+            name={product.nome}
+            price={product.preco}
+            image={
+              Array.isArray(product.image) && product.image.length > 0
+                ? product.image[0]
+                : "/placeholder.svg"
+            }
+            category={product.categoriaNome}
+            weight={product.peso ? String(product.peso) : ""}
+            color="#F4847B" // ou qualquer lógica que você queira para definir a cor
           />
         ))}
       </div>
@@ -222,4 +137,3 @@ export default function ProductGrid() {
     </div>
   )
 }
-
