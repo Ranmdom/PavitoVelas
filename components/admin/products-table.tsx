@@ -172,7 +172,31 @@ export default function ProductsTable({ data, onEditar }: { data: Product[], onE
               <DropdownMenuItem onClick={() => onEditar(product.produtoId)}>
                 Editar produto
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600">Excluir produto</DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={async () => {
+                  const confirmDelete = confirm(`Tem certeza que deseja excluir o produto "${product.nome}"?`)
+                  if (confirmDelete) {
+                    try {
+                      const res = await fetch(`/api/produtos/${product.produtoId}`, {
+                        method: "DELETE",
+                      })
+                      if (res.ok) {
+                        alert("Produto excluído com sucesso!")
+                        location.reload() // Atualiza a tabela
+                      } else {
+                        const error = await res.json()
+                        alert(`Erro ao excluir produto: ${error.error || "Erro desconhecido"}`)
+                      }
+                    } catch (error) {
+                      console.error("Erro ao excluir produto:", error)
+                      alert("Erro ao excluir produto.")
+                    }
+                  }
+                }}
+              >
+                Excluir produto
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )
