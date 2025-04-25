@@ -105,17 +105,13 @@ export default function AdminSidebar() {
       href: "/admin/pagamentos",
       icon: <CreditCard className="h-4 w-4" />,
     },
-    {
-      title: "Análises",
-      href: "/admin/analises",
-      icon: <BarChart3 className="h-4 w-4" />,
-    },
-    {
+  ]
+
+  {/*{
       title: "Configurações",
       href: "/admin/configuracoes",
       icon: <Settings className="h-4 w-4" />,
-    },
-  ]
+    },*/}
 
   return (
     <div className="hidden border-r border-[#F4847B]/20 bg-[#FBE1D0]/80 lg:block lg:w-64">
