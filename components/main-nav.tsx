@@ -41,6 +41,8 @@ export default function MainNav() {
 
   const handleLogout = () => {
     logout()
+    router.push("/")
+
     toast({
       title: "Logout realizado com sucesso",
       description: "Você foi desconectado da sua conta.",
