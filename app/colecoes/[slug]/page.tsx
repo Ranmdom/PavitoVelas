@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import ProductCard from "@/components/product-card"
 import AddCollectionToCart from "@/components/add-collection-to-cart"
 
+
 // Dados mockados para as coleções
 const collectionsData = {
   serenidade: {
@@ -209,6 +210,9 @@ const collectionsData = {
 }
 
 export default function CollectionDetailPage({ params }: { params: { slug: string } }) {
+
+  return
+  
   const collection = collectionsData[params.slug as keyof typeof collectionsData]
 
   if (!collection) {

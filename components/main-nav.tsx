@@ -68,8 +68,11 @@ export default function MainNav() {
             <Link href="/produtos" className="text-[#631C21] transition-colors hover:text-[#F4847B]">
               Produtos
             </Link>
-            <Link href="/colecoes" className="text-[#631C21] transition-colors hover:text-[#F4847B]">
+            {/* <Link href="/colecoes" className="text-[#631C21] transition-colors hover:text-[#F4847B]">
               Coleções
+            </Link> */}
+            <Link href="/sobre" className="text-[#631C21] transition-colors hover:text-[#F4847B]">
+              Sobre
             </Link>
             <Link href="/contato" className="text-[#631C21] transition-colors hover:text-[#F4847B]">
               Contato

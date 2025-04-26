@@ -162,7 +162,7 @@ const collections = [
 ]
 
 export default function CollectionsPage() {
-
+  return
 
 
 
