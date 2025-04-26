@@ -32,7 +32,7 @@ model Categoria {
   produtos    Produto[]
 }
 
-mmodel Produto {
+model Produto {
   produtoId   BigInt       @id @default(autoincrement())
   categoriaId BigInt?
   nome        String
@@ -79,7 +79,6 @@ model ItemPedido {
   pedido        Pedido    @relation(fields: [pedidoId], references: [pedidoId])
   produto       Produto   @relation(fields: [produtoId], references: [produtoId])
 }
-
 
 model MetodoPagamento {
   metodoPagamentoId BigInt      @id @default(autoincrement())
