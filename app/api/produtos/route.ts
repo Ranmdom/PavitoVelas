@@ -11,27 +11,60 @@ import { NOMEM } from 'dns'
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url)
+
+    // 1️⃣ Pega todos os filtros que vieram na URL
+    const categories = searchParams.getAll('categoria')       // pode repetir
+    const fragrances = searchParams.getAll('fragrancia')
+    const pesos = searchParams.getAll('peso')                 // ex.: ["150","250"]
+    const priceRanges = searchParams.getAll('priceRange')     // ex.: ["0-50","150+"]
+
+    // 2️⃣ Monta o WHERE dinamicamente
+    const where: any = { deletedAt: null }
+
+    if (categories.length) {
+      where.categoria = { nome: { in: categories } }
+    }
+    if (fragrances.length) {
+      where.fragrancia = { in: fragrances }
+    }
+    if (pesos.length) {
+      where.peso = { in: pesos.map((p) => parseFloat(p)) }
+    }
+    if (priceRanges.length) {
+      // cada faixa vira um critério OR
+      where.OR = priceRanges.map((r) => {
+        if (r === '0-50') return { preco: { lte: 50 } }
+        if (r === '50-100') return { preco: { gte: 50, lte: 100 } }
+        if (r === '100-150') return { preco: { gte: 100, lte: 150 } }
+        if (r === '150+') return { preco: { gte: 150 } }
+        return {}
+      })
+    }
+
+    // 3️⃣ Busca no banco usando esses filtros
     const produtos = await prisma.produto.findMany({
-      where: { deletedAt: null },
+      where,
       orderBy: { createdAt: 'desc' },
       include: { categoria: true },
     })
 
+    // 4️⃣ Mapeia no formato que seu front espera
     const resultado = produtos.map((produto) => ({
       id: String(produto.produtoId),
       nome: produto.nome,
       categoriaId: produto.categoria?.categoriaId || null,
-      categoriaNome: produto.categoria?.nome || "Categoria não cadastrada",
-      fragrancia: produto.fragrancia || "Fragrância não cadastrada",
+      categoriaNome: produto.categoria?.nome || 'Categoria não cadastrada',
+      fragrancia: produto.fragrancia || 'Fragrância não cadastrada',
       preco: Number(produto.preco),
       peso: produto.peso,
       createdAt: produto.createdAt,
-      image: produto.imagens || "/placeholder.svg", // ajuste conforme sua lógica de imagem
+      image: produto.imagens, // array de URLs/principal no front pega image[0]
     }))
 
     return jsonResponse(resultado)
   } catch (error) {
-    console.error('Erro ao buscar produtos:', error)
+    console.error('Erro ao buscar produtos filtrados:', error)
     return NextResponse.json({ error: 'Erro ao buscar produtos.' }, { status: 500 })
   }
 }
