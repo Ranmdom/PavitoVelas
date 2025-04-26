@@ -20,13 +20,17 @@ export default function LoginPage() {
     setIsLoading(true); // Ativa o estado de carregamento
 
     try {
-      const success = await login(email, senha);
+      const { success, user } = await login(email, senha);
       if (!success) {
         setError("E-mail ou senha incorretos.");
-        setIsLoading(false); // Desativa o estado de carregamento
+        setIsLoading(false); 
         return;
       }
-      router.push("/admin/dashboard");
+      if(user.tipo !== "admin") {
+        router.push("/");
+      }else{
+        router.push("/admin/dashboard");
+      }
     } catch (err) {
       console.error(err);
       setError("Erro ao conectar com o servidor.");

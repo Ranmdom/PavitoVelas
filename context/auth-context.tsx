@@ -15,7 +15,7 @@ type UserData = {
 interface AuthContextType {
   user: UserData
   token: string | null
-  login: (email: string, password: string) => Promise<boolean>
+  login: (email: string, password: string) => Promise<{success:boolean, user?:any}>
   logout: () => void
   isLoading: boolean
 }
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   // Função de login com API real
-  const login = async (email: string, senha: string): Promise<boolean> => {
+  const login = async (email: string, senha: string): Promise<{success:boolean, user?:any}> => {
     setIsLoading(true)
 
     try {
@@ -71,10 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("pavito-token", data.token)
       localStorage.setItem("pavito-user", JSON.stringify(data.usuario))
 
-      return true
+      return { success: true, user: data.usuario }
     } catch (error) {
       console.error("Erro de login:", error)
-      return false
+      return { success: false }
     } finally {
       setIsLoading(false)
     }

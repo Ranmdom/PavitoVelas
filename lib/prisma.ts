@@ -1,8 +1,6 @@
 // lib/prisma.ts
 import { PrismaClient } from '@prisma/client'
 
-console.log('🔎 DATABASE_URL usada no Prisma:', process.env.DATABASE_URL)
-
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
 export const prisma =

@@ -20,21 +20,25 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const { user, isLoading } = useAuth()
-  console.log("user", user)
   const router = useRouter()
   const pathname = usePathname()
 
 
   useEffect(() => {
-    if (isLoading || !user) {
-      router.push("/login")
-    } else if (user.tipo !== "admin") {
-      router.push("/admin/login")
+    if (!isLoading && !user) {
+      router.replace("/login")
+    }
+    if (!isLoading && user && user.tipo !== "admin") {
+      router.replace("/")
     }
   }, [isLoading, user, router])
 
-  if (isLoading || !user || user.tipo !== "admin") {
-    return null
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="animate-spin h-12 w-12 text-[#882335]" />
+      </div>
+    )
   }
 
   return (

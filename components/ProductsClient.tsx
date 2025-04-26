@@ -33,7 +33,6 @@ export default function ProductsClient() {
     try {
       const res = await fetch("/api/produtos")
       const dados = await res.json()
-      console.log("Dados recebidos:", dados)
       setProdutos(
         dados.map((produto: any) => ({
           ...produto,

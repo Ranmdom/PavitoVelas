@@ -9,7 +9,6 @@ export async function POST(req: NextRequest) {
     if (!email || !senha) {
       return NextResponse.json({ error: "Email e senha são obrigatórios." }, { status: 400 })
     }
-    console.log("HELLLO WORLD")
 
     // Busca usuário pelo email
     const usuario = await prisma.usuario.findUnique({ where: { email } })
