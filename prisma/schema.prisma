@@ -32,7 +32,7 @@ model Categoria {
   produtos    Produto[]
 }
 
-model Produto {
+mmodel Produto {
   produtoId   BigInt       @id @default(autoincrement())
   categoriaId BigInt?
   nome        String
@@ -47,7 +47,7 @@ model Produto {
   updatedAt   DateTime     @default(now())
   deletedAt   DateTime?
   imagens     String[] 
-  produtosPedido ProdutoPedido[]
+  itensPedido ItemPedido[]
   estoque Int?
   categoria   Categoria?   @relation(fields: [categoriaId], references: [categoriaId])
 }
@@ -62,38 +62,24 @@ model Pedido {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @default(now())
   deletedAt    DateTime?
-  produtosPedido ProdutoPedido[]
+  itensPedido  ItemPedido[]
   pagamentos   Pagamento[]
   usuario      Usuario      @relation(fields: [usuarioId], references: [usuarioId])
 }
 
-model ProdutoPedido {                 // antigo ItemPedido
-  @@map("ItemPedido")                // aponta para a tabela existente
-
-  produtoPedidoId  BigInt @id @map("item_pedido_id") @default(autoincrement())
-  pedidoId         BigInt
-  produtoId        BigInt
-  quantidade       Int
-  precoUnitario    Decimal @db.Decimal(10, 2)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @default(now())
-  deletedAt        DateTime?
-
-  pedido  Pedido  @relation(fields: [pedidoId], references: [pedidoId])
-  produto Produto @relation(fields: [produtoId], references: [produtoId])
+model ItemPedido {
+  itemPedidoId  BigInt    @id @default(autoincrement())
+  pedidoId      BigInt
+  produtoId     BigInt
+  quantidade    Int
+  precoUnitario Decimal   @db.Decimal(10, 2)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  deletedAt     DateTime?
+  pedido        Pedido    @relation(fields: [pedidoId], references: [pedidoId])
+  produto       Produto   @relation(fields: [produtoId], references: [produtoId])
 }
 
-/* ---------------------  VIEW  ------------------------- */
-
-model ResumoPedido {
-  pedidoId    BigInt  @id        @map("pedido_id")
-  usuarioId   BigInt               @map("usuario_id")
-  pedido      String
-  valorCompra Decimal @map("valor_compra") @db.Decimal(10, 2)
-
-  @@map("resumo_pedidos")
-  @@ignore                             // read-only
-}
 
 model MetodoPagamento {
   metodoPagamentoId BigInt      @id @default(autoincrement())
