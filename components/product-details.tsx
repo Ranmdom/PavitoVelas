@@ -226,9 +226,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             <TabsTrigger value="description" className="data-[state=active]:bg-white">
               Descrição
             </TabsTrigger>
-            <TabsTrigger value="ingredients" className="data-[state=active]:bg-white">
+            {/*<TabsTrigger value="ingredients" className="data-[state=active]:bg-white">
               Ingredientes
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger value="how-to-use" className="data-[state=active]:bg-white">
               Como usar
             </TabsTrigger>
