@@ -241,14 +241,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               tornam nossos produtos especiais.
             </p>
           </TabsContent>
-          <TabsContent value="ingredients" className="mt-4 text-[#631C21]/80">
+          {/*<TabsContent value="ingredients" className="mt-4 text-[#631C21]/80">
             <p>{product.ingredients}</p>
             <p className="mt-4">
               Utilizamos apenas ingredientes naturais e sustentáveis em nossas velas. A cera de soja é biodegradável e
               queima de forma mais limpa e duradoura que a parafina tradicional. Nossos óleos essenciais são
               selecionados cuidadosamente para criar fragrâncias únicas e duradouras.
             </p>
-          </TabsContent>
+          </TabsContent>*/}
           <TabsContent value="how-to-use" className="mt-4 text-[#631C21]/80">
             <h4 className="font-medium text-[#631C21]">Para o primeiro uso:</h4>
             <ul className="mt-2 list-inside list-disc space-y-2">
