@@ -1,5 +1,5 @@
 "use client"
-
+import { useRouter } from "next/navigation";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -48,6 +48,7 @@ export default function ProductsTable({ data, onEditar }: { data: Product[], onE
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = useState({})
+  const router = useRouter()
 
   // Definição das colunas para o React Table
   const columns: ColumnDef<Product>[] = [
@@ -109,11 +110,22 @@ export default function ProductsTable({ data, onEditar }: { data: Product[], onE
     {
       accessorKey: "categoria",
       header: "Categoria",
-      cell: ({ row }) => (
-        <Badge variant="outline" className="bg-[#F4847B]/10 text-[#631C21]">
-          {row.getValue("categoria")}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const cat = row.getValue("categoria") as string;
+        const label = cat === "Limitada" ? "Edição limitada" : cat;
+        return (
+          <Badge
+            variant="outline"
+            className={
+              cat === "Limitada"
+                ? "bg-yellow-200 text-yellow-800"
+                : "bg-[#F4847B]/10 text-[#631C21]"
+            }
+          >
+            {label}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "fragrancia",
@@ -154,7 +166,8 @@ export default function ProductsTable({ data, onEditar }: { data: Product[], onE
       id: "actions",
       cell: ({ row }) => {
         const product = row.original
-      
+
+        const isLimited = product.categoria === "Limitada"
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -165,33 +178,107 @@ export default function ProductsTable({ data, onEditar }: { data: Product[], onE
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
+
               <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.produtoId)}>
                 Copiar ID
               </DropdownMenuItem>
+
               <DropdownMenuSeparator />
+
               <DropdownMenuItem onClick={() => onEditar(product.produtoId)}>
                 Editar produto
               </DropdownMenuItem>
+
+              {product.categoria !== "Limitada" ? (
+                <DropdownMenuItem
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(
+                        `/api/produtos/${product.produtoId}/limitada`,
+                        { method: "POST" }
+                      );
+                      if (res.ok) {
+                        alert("Produto marcado como edição limitada!");
+                        router.refresh();
+                      } else {
+                        let errorMessage: string | undefined;
+                        try {
+                          const json = await res.json();
+                          errorMessage = json.error;
+                        } catch {
+                          errorMessage = undefined;
+                        }
+                        alert(errorMessage ?? "Erro ao marcar como limitada");
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      alert("Falha na requisição.");
+                    }
+                  }}
+                >
+                  Marcar como edição limitada
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(
+                        `/api/produtos/${product.produtoId}/limitada`,
+                        { method: "DELETE" }
+                      );
+                      if (res.ok) {
+                        alert("Produto removido da edição limitada!");
+                        router.refresh();
+                      } else {
+                        let errorMessage: string | undefined;
+                        try {
+                          const json = await res.json();
+                          errorMessage = json.error;
+                        } catch {
+                          errorMessage = undefined;
+                        }
+                        alert(errorMessage ?? "Erro ao desmarcar como limitada");
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      alert("Falha na requisição.");
+                    }
+                  }}
+                >
+                  Remover de edição limitada
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
               <DropdownMenuItem
                 className="text-red-600"
                 onClick={async () => {
-                  const confirmDelete = confirm(`Tem certeza que deseja excluir o produto "${product.nome}"?`)
-                  if (confirmDelete) {
-                    try {
-                      const res = await fetch(`/api/produtos/${product.produtoId}`, {
-                        method: "DELETE",
-                      })
-                      if (res.ok) {
-                        alert("Produto excluído com sucesso!")
-                        location.reload() // Atualiza a tabela
-                      } else {
-                        const error = await res.json()
-                        alert(`Erro ao excluir produto: ${error.error || "Erro desconhecido"}`)
+                  const confirmDelete = confirm(
+                    `Tem certeza que deseja excluir o produto "${product.nome}"?`
+                  );
+                  if (!confirmDelete) return;
+
+                  try {
+                    const res = await fetch(`/api/produtos/${product.produtoId}`, {
+                      method: "DELETE",
+                    });
+                    if (res.ok) {
+                      alert("Produto excluído com sucesso!");
+                      router.refresh();
+                    } else {
+                      let errorMessage: string | undefined;
+                      try {
+                        const json = await res.json();
+                        errorMessage = json.error;
+                      } catch {
+                        errorMessage = undefined;
                       }
-                    } catch (error) {
-                      console.error("Erro ao excluir produto:", error)
-                      alert("Erro ao excluir produto.")
+                      alert(errorMessage ?? "Erro ao excluir produto");
                     }
+                  } catch (error) {
+                    console.error("Erro ao excluir produto:", error);
+                    alert("Erro ao excluir produto.");
                   }
                 }}
               >

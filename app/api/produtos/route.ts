@@ -13,26 +13,17 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
 
-    // 1️⃣ Pega todos os filtros que vieram na URL
-    const categories = searchParams.getAll('categoria')       // pode repetir
+    // 🛠️ filtros já existentes
+    const categories = searchParams.getAll('categoria')
     const fragrances = searchParams.getAll('fragrancia')
-    const pesos = searchParams.getAll('peso')                 // ex.: ["150","250"]
-    const priceRanges = searchParams.getAll('priceRange')     // ex.: ["0-50","150+"]
+    const pesos = searchParams.getAll('peso')
+    const priceRanges = searchParams.getAll('priceRange')
 
-    // 2️⃣ Monta o WHERE dinamicamente
     const where: any = { deletedAt: null }
-
-    if (categories.length) {
-      where.categoria = { nome: { in: categories } }
-    }
-    if (fragrances.length) {
-      where.fragrancia = { in: fragrances }
-    }
-    if (pesos.length) {
-      where.peso = { in: pesos.map((p) => parseFloat(p)) }
-    }
+    if (categories.length) where.categoria = { nome: { in: categories } }
+    if (fragrances.length) where.fragrancia = { in: fragrances }
+    if (pesos.length) where.peso = { in: pesos.map((p) => parseFloat(p)) }
     if (priceRanges.length) {
-      // cada faixa vira um critério OR
       where.OR = priceRanges.map((r) => {
         if (r === '0-50') return { preco: { lte: 50 } }
         if (r === '50-100') return { preco: { gte: 50, lte: 100 } }
@@ -42,14 +33,14 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    // 3️⃣ Busca no banco usando esses filtros
+    // busca no banco
     const produtos = await prisma.produto.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       include: { categoria: true },
     })
 
-    // 4️⃣ Mapeia no formato que seu front espera
+    // 📦 mapeia o que o front precisa, incluindo descrição e tempoQueima
     const resultado = produtos.map((produto) => ({
       id: String(produto.produtoId),
       nome: produto.nome,
@@ -58,8 +49,12 @@ export async function GET(req: NextRequest) {
       fragrancia: produto.fragrancia || 'Fragrância não cadastrada',
       preco: Number(produto.preco),
       peso: produto.peso,
+      // ────────────── AQUI ──────────────
+      descricao: produto.descricao ?? 'Sem descrição',
+      tempoQueima: produto.tempoQueima ?? 0,
+      // ───────────────────────────────────
       createdAt: produto.createdAt,
-      image: produto.imagens, // array de URLs/principal no front pega image[0]
+      image: produto.imagens, // seu array de URLs
     }))
 
     return jsonResponse(resultado)

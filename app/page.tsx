@@ -5,6 +5,7 @@ import FeaturedProduct from "@/components/featured-product"
 import Newsletter from "@/components/newsletter"
 import { buttonVariants } from "@/components/ui/button"
 import { ArrowRight, Flame } from "lucide-react"
+import PopularProducts from "@/components/PopularProducts"
 
 export default function Home() {
   return (
@@ -67,47 +68,12 @@ export default function Home() {
             </Link>
           </div>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            <ProductCard
-              id="1"
-              name="Vela Pêssego & Baunilha"
-              price={49.9}
-              image="/templates/vela-1.jpeg?height=300&width=300"
-              category="Frutal"
-              weight="250g"
-              color="#F4847B"
-            />
-            <ProductCard
-              id="2"
-              name="Vela Lavanda & Bergamota"
-              price={54.9}
-              image="/templates/vela-1.jpeg?height=300&width=300"
-              category="Floral"
-              weight="250g"
-              color="#CD4E65"
-            />
-            <ProductCard
-              id="3"
-              name="Vela Madeira & Âmbar"
-              price={59.9}
-              image="/templates/vela-1.jpeg?height=300&width=300"
-              category="Amadeirado"
-              weight="300g"
-              color="#882335"
-            />
-            <ProductCard
-              id="4"
-              name="Vela Vanilla & Canela"
-              price={49.9}
-              image="/templates/vela-1.jpeg?height=300&width=300"
-              category="Especiarias"
-              weight="250g"
-              color="#D36A6A"
-            />
+            <PopularProducts />
           </div>
         </div>
       </section>
 
-      {/* Produto Destaque */}
+      {/* Produto Limitado */}
       <section className="w-full bg-white py-12 md:py-24">
         <div className="container mx-auto px-4">
           <FeaturedProduct />
