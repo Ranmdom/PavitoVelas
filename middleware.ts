@@ -24,7 +24,7 @@ export async function middleware(req: NextRequest) {
 
   if (pathname.startsWith("/minha-conta")) {
     if (!isAuth || !isAdmin) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.redirect(new URL("/", req.url));
     }
   }
 
