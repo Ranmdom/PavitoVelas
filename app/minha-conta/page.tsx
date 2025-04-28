@@ -4,7 +4,9 @@ import { ArrowLeft, Package, ShoppingBag, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import CustomerAccountInfo from "@/components/customer-account-info"
+import CustomerAccountInfo from "@/components/minha-conta/customer-account-info"
+import CustomerAddresses from "@/components/minha-conta/customer-addresses"
+import CustomerOrders from "@/components/minha-conta/customer-orders"
 
 export const metadata: Metadata = {
   title: "Minha Conta | Pavito Velas",
@@ -63,14 +65,7 @@ export default function CustomerAccountPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <ShoppingBag className="mx-auto h-12 w-12 text-[#F4847B]/50 mb-4" />
-                <h3 className="text-lg font-medium text-[#631C21] mb-2">Nenhum pedido encontrado</h3>
-                <p className="text-[#631C21]/70 mb-4">Você ainda não realizou nenhum pedido.</p>
-                <Button asChild className="bg-[#882335] text-white hover:bg-[#631C21]">
-                  <Link href="/produtos">Explorar produtos</Link>
-                </Button>
-              </div>
+              <CustomerOrders />
             </CardContent>
           </Card>
         </TabsContent>
@@ -82,12 +77,7 @@ export default function CustomerAccountPage() {
               <CardDescription className="text-[#631C21]/70">Gerencie seus endereços de entrega</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <Package className="mx-auto h-12 w-12 text-[#F4847B]/50 mb-4" />
-                <h3 className="text-lg font-medium text-[#631C21] mb-2">Nenhum endereço cadastrado</h3>
-                <p className="text-[#631C21]/70 mb-4">Você ainda não cadastrou nenhum endereço.</p>
-                <Button className="bg-[#882335] text-white hover:bg-[#631C21]">Adicionar Endereço</Button>
-              </div>
+              <CustomerAddresses/>
             </CardContent>
           </Card>
         </TabsContent>

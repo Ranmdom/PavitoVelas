@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { useAuth } from "@/context/auth-context"
+import { useSession } from "next-auth/react";
+
 import { toast } from "@/hooks/use-toast"
 
 export default function CustomerAccountInfo() {
-  const { user } = useAuth()
+  const { data: session } = useSession()
+  const user = session?.user ?? null
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: user?.nome || "",

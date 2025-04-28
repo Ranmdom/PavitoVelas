@@ -1,3 +1,4 @@
+// Arquivo: lib/auth.ts
 import jwt from "jsonwebtoken"
 
 // Chave secreta para assinar tokens JWT (em produção, use variáveis de ambiente)

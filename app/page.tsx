@@ -110,7 +110,7 @@ export default function Home() {
               </p>
             </div>
             <div className="rounded-lg bg-[#631C21] p-6">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#F4847B]">
+              <div className="mapb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#F4847B]">
                 <Flame className="h-6 w-6 text-[#631C21]" />
               </div>
               <h3 className="mb-2 text-xl font-bold">Produção artesanal</h3>

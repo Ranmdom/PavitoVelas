@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Flame } from "lucide-react";
-import { useAuth } from "@/context/auth-context"; 
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,7 +12,6 @@ export default function LoginPage() {
   const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Estado de carregamento
-  const { login } = useAuth();  
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -20,17 +19,23 @@ export default function LoginPage() {
     setIsLoading(true); // Ativa o estado de carregamento
 
     try {
-      const { success, user } = await login(email, senha);
-      if (!success) {
-        setError("E-mail ou senha incorretos.");
-        setIsLoading(false); 
-        return;
-      }
-      if(user.tipo !== "admin") {
-        router.push("/");
+      const res = await signIn("credentials", {
+        email,
+        senha,
+        redirect: false,
+        callbackUrl: "/admin/dashboard",
+      });
+
+      console.log(res);
+      
+      if (!res?.error) {
+        router.push("/admin/dashboard")
       }else{
-        router.push("/admin/dashboard");
+        setError("E-mail ou senha incorretos.");
       }
+
+      setIsLoading(false)
+      
     } catch (err) {
       console.error(err);
       setError("Erro ao conectar com o servidor.");

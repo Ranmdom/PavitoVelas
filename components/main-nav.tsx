@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import CartDropdown from "@/components/cart-dropdown"
-import { useAuth } from "@/context/auth-context"
+import { useSession, signOut } from "next-auth/react";
 import { toast } from "@/hooks/use-toast"
 import {
   DropdownMenu,
@@ -24,7 +24,8 @@ import CategoryBar from "@/components/category-bar"
 export default function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSearchAnimating, setIsSearchAnimating] = useState(false)
-  const { user, logout } = useAuth()
+  const { data: session } = useSession()
+  const user = session?.user 
   const router = useRouter()
 
   const handleSearchOpen = () => {
@@ -39,8 +40,8 @@ export default function MainNav() {
     setIsSearchOpen(false)
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await signOut({ redirect: false })
     router.push("/")
 
     toast({
@@ -144,11 +145,11 @@ export default function MainNav() {
                       <DropdownMenuItem className="flex items-center gap-2">
                         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F4847B]/20">
                           <span className="text-xs font-medium text-[#631C21]">
-                            {user.nome.charAt(0).toUpperCase()}
+                            {user.name?.charAt(0).toUpperCase() ?? ""}
                           </span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium">{user.nome}</span>
+                          <span className="text-sm font-medium">{user.name}</span>
                           <span className="text-xs text-[#631C21]/70">{user.email}</span>
                         </div>
                       </DropdownMenuItem>
