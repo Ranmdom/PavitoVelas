@@ -53,25 +53,7 @@ export default function Home() {
       </section>
 
       {/* Produtos Populares */}
-      <section className="w-full bg-[#FBE1D0] py-12 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tighter text-[#631C21] sm:text-4xl">
-                Nossos produtos mais vendidos
-              </h2>
-              <p className="mt-2 text-[#882335]/80">Descubra as velas que estão encantando nossos clientes</p>
-            </div>
-            <Link href="/produtos" className={buttonVariants({ variant: "link", className: "text-[#882335]" })}>
-              Ver todos os produtos
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </div>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             <PopularProducts />
-          </div>
-        </div>
-      </section>
 
       {/* Produto Limitado */}
       <section className="w-full bg-white py-12 md:py-24">

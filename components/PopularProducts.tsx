@@ -40,7 +40,7 @@ export default function PopularProducts() {
   if (list.length === 0) return <div>Nenhum produto popular encontrado.</div>
 
   return (
-    <section className="w-full bg-[#FBE1D0] py-12 md:py-24">
+    <section className="w-full bg-[#ffe4e1] py-12 md:py-24">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div>
