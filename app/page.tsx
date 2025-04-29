@@ -53,7 +53,7 @@ export default function Home() {
       </section>
 
       {/* Produtos Populares */}
-            <PopularProducts />
+      <PopularProducts />
 
       {/* Produto Limitado */}
       <section className="w-full bg-white py-12 md:py-24">

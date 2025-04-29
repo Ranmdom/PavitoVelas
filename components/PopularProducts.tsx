@@ -36,9 +36,6 @@ export default function PopularProducts() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <div>Carregando produtos populares…</div>
-  if (list.length === 0) return <div>Nenhum produto popular encontrado.</div>
-
   return (
     <section className="w-full bg-[#ffe4e1] py-12 md:py-24">
       <div className="container mx-auto px-4">
@@ -60,8 +57,20 @@ export default function PopularProducts() {
           </Link>
         </div>
 
+        {loading && (
+          <div className="mt-8 flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-t-transparent border-[#631C21] border-solid" />
+          </div>
+        )}
+
+        {!loading && list.length === 0 && (
+          <div className="mt-8 text-center">
+            <p className="text-lg text-[#631C21]">Nenhum produto popular encontrado.</p>
+          </div>
+        )}
+
         <div className="mt-8 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {list.map((p) => (
+          {list.map((p,i) => (
             <ProductCard
               key={p.id}
               id={p.id}
@@ -70,7 +79,8 @@ export default function PopularProducts() {
               image={p.image}
               category={p.categoria}
               weight={p.peso}
-              color={colorMap[p.categoria] ?? "#F4847B"}  // ← aqui
+              color={colorMap[p.categoria] ?? "#F4847B"}  
+              delay={i * 0.1}
             />
           ))}
         </div>
