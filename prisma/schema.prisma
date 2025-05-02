@@ -48,7 +48,7 @@ model Produto {
   deletedAt   DateTime?
   imagens     String[] 
   itensPedido ItemPedido[]
-  estoque Int?
+  estoque     Int?
   categoria   Categoria?   @relation(fields: [categoriaId], references: [categoriaId])
 }
 
@@ -65,6 +65,7 @@ model Pedido {
   itensPedido  ItemPedido[]
   pagamentos   Pagamento[]
   usuario      Usuario      @relation(fields: [usuarioId], references: [usuarioId])
+  stripeSessionId String?   @unique // Adicionado para rastrear sessões do Stripe
 }
 
 model ItemPedido {
@@ -92,6 +93,7 @@ model MetodoPagamento {
   deletedAt         DateTime?
   usuario           Usuario     @relation(fields: [usuarioId], references: [usuarioId])
   pagamentos        Pagamento[]
+  stripePaymentMethodId String? // Adicionado para métodos de pagamento do Stripe
 }
 
 model Pagamento {
@@ -106,6 +108,7 @@ model Pagamento {
   deletedAt         DateTime?
   metodoPagamento   MetodoPagamento @relation(fields: [metodoPagamentoId], references: [metodoPagamentoId])
   pedido            Pedido          @relation(fields: [pedidoId], references: [pedidoId])
+  stripePaymentIntentId String?     // Adicionado para rastrear PaymentIntents do Stripe
 }
 
 model Endereco {

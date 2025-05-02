@@ -46,7 +46,7 @@ import { useSession } from "next-auth/react";
 
 
 // Tipos
-type OrderStatus = "pendente" | "pago" | "enviado" | "entregue" | "cancelado"
+type OrderStatus = "PENDENTE" | "PAGO" | "ENVIADO" | "ENTREGUE" | "CANCELADO"
 
 interface OrderItem {
   itemPedidoId: number
@@ -145,6 +145,7 @@ export default function CustomerOrders() {
 
   // Aplicar filtros e ordenação
   useEffect(() => {
+    console.log(orders)
     let result = [...orders]
     
     // Aplicar filtro de status
@@ -193,11 +194,11 @@ export default function CustomerOrders() {
   // Formatar status do pedido
   const formatStatus = (status: OrderStatus) => {
     const statusMap = {
-      pendente: { label: "Pendente", color: "bg-yellow-100 text-yellow-800" },
-      pago: { label: "Pago", color: "bg-blue-100 text-blue-800" },
-      enviado: { label: "Enviado", color: "bg-purple-100 text-purple-800" },
-      entregue: { label: "Entregue", color: "bg-green-100 text-green-800" },
-      cancelado: { label: "Cancelado", color: "bg-red-100 text-red-800" }
+      PENDENTE: { label: "Pendente", color: "bg-yellow-100 text-yellow-800" },
+      PAGO: { label: "Pago", color: "bg-blue-100 text-blue-800" },
+      ENVIADO: { label: "Enviado", color: "bg-purple-100 text-purple-800" },
+      ENTREGUE: { label: "Entregue", color: "bg-green-100 text-green-800" },
+      CANCELADO: { label: "Cancelado", color: "bg-red-100 text-red-800" }
     }
     
     return (

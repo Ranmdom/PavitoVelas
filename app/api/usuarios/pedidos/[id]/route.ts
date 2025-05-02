@@ -5,20 +5,27 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const prisma = new PrismaClient()
 
-// GET /api/pedidos/[id] - Buscar detalhes de um pedido específico
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+// GET /api/pedidos/[id] - Listar todos os pedidos de um usuário
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || !session.user) {
+    if (!session?.user) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
-    const userId = session.user.id
+    // Garante que usuário só veja os próprios pedidos
+    if (session.user.id !== params.id) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
+    }
 
-    const pedido = await prisma.pedido.findFirst({
+    // Busca todos os pedidos ativos (deletedAt = null) daquele usuário
+    const pedidos = await prisma.pedido.findMany({
       where: {
-        usuarioId: BigInt(userId),
+        usuarioId: BigInt(params.id),
         deletedAt: null,
       },
       include: {
@@ -32,18 +39,18 @@ export async function GET(request: Request, { params }: { params: { id: string }
           },
         },
       },
+      orderBy: {
+        dataPedido: "desc", // opcional: ordena do mais recente ao mais antigo
+      },
     })
 
-    if (!pedido) {
-      return NextResponse.json({ error: "Pedido não encontrado" }, { status: 404 })
-    }
-
-    // Transformar os dados para o formato esperado pelo cliente
-    const formattedPedido = {
+    // Formata cada pedido
+    const formatted = pedidos.map((pedido) => ({
       pedidoId: Number(pedido.pedidoId),
       dataPedido: pedido.dataPedido.toISOString(),
       statusPedido: pedido.statusPedido,
       valorTotal: Number(pedido.valorTotal),
+      status: pedido.statusPedido,
       itensPedido: pedido.itensPedido.map((item) => ({
         itemPedidoId: Number(item.itemPedidoId),
         produtoId: Number(item.produtoId),
@@ -51,11 +58,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
         quantidade: item.quantidade,
         precoUnitario: Number(item.precoUnitario),
       })),
-    }
+    }))
 
-    return NextResponse.json(formattedPedido)
+    return NextResponse.json(formatted)
   } catch (error) {
-    console.error("Erro ao buscar detalhes do pedido:", error)
-    return NextResponse.json({ error: "Erro ao buscar detalhes do pedido" }, { status: 500 })
+    console.error("Erro ao listar pedidos do usuário:", error)
+    return NextResponse.json(
+      { error: "Erro ao listar pedidos do usuário" },
+      { status: 500 }
+    )
   }
 }
