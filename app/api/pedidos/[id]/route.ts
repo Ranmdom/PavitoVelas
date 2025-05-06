@@ -1,65 +1,140 @@
-// app/api/pedidos/[id]/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { jsonResponse } from '@/utils/jsonResponse'
+import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-interface IParams {
-  params: {
-    id: string
-  }
-}
-
-// GET /api/pedidos/:id
-export async function GET(req: NextRequest, { params }: IParams) {
+// GET /api/pedidos/[id] - Obter detalhes de um pedido específico
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const pedidoId = Number(params.id)
-    const pedido = await prisma.pedido.findUnique({ where: { pedidoId } })
-    if (!pedido) {
-      return NextResponse.json({ error: 'pedido não encontrado.' }, { status: 404 })
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
-    return jsonResponse(pedido)
+
+    // Buscar o pedido com todos os detalhes
+    const pedido = await prisma.pedido.findUnique({
+      where: {
+        pedidoId: BigInt(params.id),
+        deletedAt: null,
+      },
+      include: {
+        usuario: true,
+        itensPedido: {
+          include: {
+            produto: true,
+          },
+        },
+      },
+    })
+
+    if (!pedido) {
+      return NextResponse.json({ error: "Pedido não encontrado" }, { status: 404 })
+    }
+
+    // Verificar se o usuário tem permissão para ver este pedido
+    const isAdmin = session.user.tipo === "admin"
+    if (!isAdmin && pedido.usuarioId.toString() !== session.user.id) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
+    }
+
+    // Buscar o endereço principal do usuário
+    const endereco = await prisma.endereco.findFirst({
+      where: {
+        usuarioId: pedido.usuarioId,
+        deletedAt: null,
+      },
+    })
+
+    // Formatar o pedido para a resposta
+    const pedidoFormatado = {
+      pedidoId: pedido.pedidoId.toString(),
+      statusPedido: pedido.statusPedido,
+      dataPedido: pedido.dataPedido.toISOString(),
+      valorTotal: Number(pedido.valorTotal),
+      cliente: {
+        id: pedido.usuarioId.toString(),
+        nome: pedido.usuario.nome,
+        sobrenome: pedido.usuario.sobrenome,
+        email: pedido.usuario.email,
+      },
+      itensPedido: pedido.itensPedido.map((item) => ({
+        itemPedidoId: item.itemPedidoId.toString(),
+        produtoId: item.produtoId.toString(),
+        quantidade: item.quantidade,
+        precoUnitario: Number(item.precoUnitario),
+        produto: {
+          nome: item.produto.nome,
+          descricao: item.produto.descricao,
+          imagens: item.produto.imagens,
+        },
+      })),
+      endereco: endereco
+        ? {
+            enderecoId: endereco.enderecoId.toString(),
+            logradouro: endereco.logradouro,
+            numero: endereco.numero,
+            bairro: endereco.bairro,
+            cidade: endereco.cidade,
+            estado: endereco.estado,
+            cep: endereco.cep,
+          }
+        : null,
+    }
+
+    return NextResponse.json(pedidoFormatado)
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Erro ao buscar pedido.' }, { status: 500 })
+    console.error("Erro ao processar requisição:", error)
+    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
   }
 }
 
-// PUT /api/pedidos/:id
-export async function PUT(req: NextRequest, { params }: IParams) {
+// PATCH /api/pedidos/[id] - Atualizar o status de um pedido
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
-    const pedidoId = Number(params.id)
-    const data = await req.json()
+    const session = await getServerSession(authOptions)
 
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+    }
+
+    // Verificar se o usuário é admin
+    const isAdmin = session.user.tipo === "admin"
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Apenas administradores podem atualizar pedidos" }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { status } = body
+
+    if (!status) {
+      return NextResponse.json({ error: "Status é obrigatório" }, { status: 400 })
+    }
+
+    // Validar o status
+    const statusValidos = ["pendente", "em_producao", "a_caminho", "entregue", "cancelado"]
+    if (!statusValidos.includes(status)) {
+      return NextResponse.json({ error: "Status inválido" }, { status: 400 })
+    }
+
+    // Atualizar o status do pedido
     const pedidoAtualizado = await prisma.pedido.update({
-      where: { pedidoId },
+      where: {
+        pedidoId: BigInt(params.id),
+      },
       data: {
-        ...data
+        statusPedido: status,
+        updatedAt: new Date(),
       },
     })
 
-    return jsonResponse(pedidoAtualizado)
-  } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Erro ao atualizar pedido.' }, { status: 500 })
-  }
-}
-
-// DELETE /api/pedidos/:id
-export async function DELETE(req: NextRequest, { params }: IParams) {
-  try {
-    const pedidoId = Number(params.id)
-
-    // Soft-delete
-    const pedidoDeletado = await prisma.pedido.update({
-      where: { pedidoId },
-      data: {
-        deletedAt: new Date(),
-      },
+    return NextResponse.json({
+      pedidoId: pedidoAtualizado.pedidoId.toString(),
+      statusPedido: pedidoAtualizado.statusPedido,
+      mensagem: "Status atualizado com sucesso",
     })
-
-    return jsonResponse(pedidoDeletado)
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Erro ao deletar pedido.' }, { status: 500 })
+    console.error("Erro ao processar requisição:", error)
+    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
   }
 }

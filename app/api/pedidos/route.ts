@@ -1,65 +1,60 @@
-// app/api/pedidos/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getTokenFromHeader, verifyToken } from '@/lib/auth'
-import { jsonResponse } from '@/utils/jsonResponse'
-// import bcrypt from 'bcrypt' // caso queira hash de senha aqui também
+import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-export async function GET(req: NextRequest) {
-  // Exemplo de verificação de token:
-  // const token = getTokenFromHeader(req)
-  // const decoded = token && verifyToken(token)
-  // if (!decoded) {
-  //   return NextResponse.json({ error: 'Acesso negado.' }, { status: 401 })
-  // }
-
+// GET /api/pedidos - Listar todos os pedidos
+export async function GET(request: Request) {
   try {
-    const pedidos = await prisma.pedido.findMany({
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+    }
+
+    // Verificar se o usuário é admin, caso contrário, retornar apenas seus pedidos
+    const isAdmin = session.user.tipo === "admin"
+
+    const { searchParams } = new URL(request.url)
+    const usuarioId = searchParams.get("usuarioId")
+
+    // Construir a consulta base
+    let pedidos = await prisma.pedido.findMany({
+      where: {
+        // Se não for admin, filtrar apenas pelos pedidos do usuário
+        ...((!isAdmin && session.user.id) ? { usuarioId: BigInt(session.user.id) } : {}),
+        // Se for admin e tiver um usuarioId específico
+        ...(usuarioId && isAdmin ? { usuarioId: BigInt(usuarioId) } : {}),
+        // Apenas pedidos não deletados
+        deletedAt: null,
+      },
       include: {
-        itensPedido: {
-          include: {
-            produto: true, // inclui os dados do produto relacionado a cada item do pedido
-          }
+        usuario: {
+          select: {
+            nome: true,
+            sobrenome: true,
+          },
         },
-        // Se desejar, pode incluir outros relacionamentos, como usuário e pagamentos:
-        usuario: true,
-        pagamentos: true
-      }
-    })
-    return jsonResponse(pedidos)
-  } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Erro ao buscar pedidos.' }, { status: 500 })
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const data = await req.json()
-    // data deve conter os campos do modelo, ex:
-    // {
-    //   pedidoId?: number,
-    //   nome: string,
-    //   sobrenome: string,
-    //   email: string,
-    //   senhaHash: string,
-    //   ...
-    // }
-
-    // Exemplo de upsert
-    const pedidoUpsert = await prisma.pedido.upsert({
-      where: { pedidoId: data.pedidoId || 0 },
-      create: {
-        ...data
+        itensPedido: true,
       },
-      update: {
-        ...data
+      orderBy: {
+        dataPedido: "desc",
       },
     })
 
-    return jsonResponse(pedidoUpsert)
+    // Formatar os pedidos para a resposta
+    const pedidosFormatados = pedidos.map((pedido) => ({
+      pedidoId: pedido.pedidoId.toString(),
+      cliente: `${pedido.usuario.nome} ${pedido.usuario.sobrenome}`,
+      status: pedido.statusPedido as "pendente" | "em_producao" | "a_caminho" | "entregue" | "cancelado",
+      data: pedido.dataPedido.toISOString(),
+      total: Number(pedido.valorTotal),
+      itens: pedido.itensPedido.length,
+    }))
+
+    return NextResponse.json(pedidosFormatados)
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Erro ao criar/atualizar pedido.' }, { status: 500 })
+    console.error("Erro ao processar requisição:", error)
+    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
   }
 }

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       data: {
         usuario: { connect: { usuarioId: sessionLogin.user.id } },
         valorTotal: Math.round(items.reduce((acc: number, item: any) => acc + item.price * item.quantity, 0)),
-        statusPedido: "PENDENTE",
+        statusPedido: "pendente",
         itensPedido: {
           create: items.map((item: any) => ({
             quantidade: item.quantity,
