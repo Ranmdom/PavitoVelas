@@ -6,7 +6,7 @@ import { extractTokenFromHeader, verifyToken } from '@/lib/auth'
 import { jsonResponse } from '@/utils/jsonResponse'
 
 export async function GET(req: NextRequest) {
-  // Exemplo de verificação de token:
+  // se precisar, descomente e adapte sua verificação de token
   // const token = getTokenFromHeader(req)
   // const decoded = token && verifyToken(token)
   // if (!decoded) {
@@ -14,15 +14,40 @@ export async function GET(req: NextRequest) {
   // }
 
   try {
-    const usuarios = await prisma.categoria.findMany({
+    const categorias = await prisma.categoria.findMany({
       where: {
-      deletedAt: null
-      }
+        deletedAt: null,
+        // garante pelo menos 1 produto “ativo” (não deletado)
+        produtos: {
+          some: {
+            deletedAt: null,
+          },
+        },
+      },
+      // inclui no payload a contagem de produtos por categoria
+      include: {
+        _count: {
+          select: {
+            produtos: true,
+          },
+        },
+      },
+      // ordena descrescente pela quantidade de produtos
+      orderBy: {
+        produtos: {
+          _count: 'desc',
+        },
+      },
+      take: 20,  // limita às 20 primeiras
     })
-    return jsonResponse(usuarios)
+
+    return jsonResponse(categorias)
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: 'Erro ao buscar a categoria.' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Erro ao buscar categorias.' },
+      { status: 500 }
+    )
   }
 }
 

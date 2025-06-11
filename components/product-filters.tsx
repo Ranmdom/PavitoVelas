@@ -1,3 +1,5 @@
+// ProductFilters.tsx
+
 "use client"
 
 import { useEffect, useRef, useState } from "react"
@@ -17,6 +19,12 @@ interface ProductFiltersProps {
     sizes: string[]
     priceRange: string[]
   }) => void
+  filters: {
+    categories: string[]
+    fragrances: string[]
+    sizes: string[]
+    priceRange: string[]
+  }
 }
 
 type Produto = {
@@ -25,15 +33,27 @@ type Produto = {
   peso: number | null
 }
 
-export default function ProductFilters({ className, onFiltersChange }: ProductFiltersProps) {
+export default function ProductFilters({ className, onFiltersChange, filters }: ProductFiltersProps) {
   const [priceRange, setPriceRange] = useState<string[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [fragrances, setFragrances] = useState<string[]>([])
   const [sizes, setSizes] = useState<string[]>([])
   const [options, setOptions] = useState<Produto[]>([])
-  const didMount = useRef(false)
 
-  // Carrega produtos brutos para extrair opções de filtro
+  // Atualiza o estado interno caso o filtro vindo da URL (prop) mude
+  useEffect(() => {
+    setCategories(filters.categories || [])
+    setFragrances(filters.fragrances || [])
+    setSizes(filters.sizes || [])
+    setPriceRange(filters.priceRange || [])
+  }, [
+    filters.categories.join(","),
+    filters.fragrances.join(","),
+    filters.sizes.join(","),
+    filters.priceRange.join(","),
+  ])
+
+  // Busca opções únicas
   useEffect(() => {
     fetch("/api/produtos")
       .then((res) => res.json())
@@ -41,14 +61,16 @@ export default function ProductFilters({ className, onFiltersChange }: ProductFi
       .catch(console.error)
   }, [])
 
-  // Notifica o pai após interação do usuário (não no primeiro render)
+  // Dispara para o pai ao mudar filtros internos
   useEffect(() => {
-    if (!didMount.current) {
-      didMount.current = true
-      return
-    }
-    onFiltersChange({ categories, fragrances, sizes, priceRange })
-  }, [categories, fragrances, sizes, priceRange, onFiltersChange])
+    onFiltersChange({
+      categories,
+      fragrances,
+      sizes,
+      priceRange,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories, fragrances, sizes, priceRange])
 
   const unique = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)))
   const categoriasUnicas = unique(options.map((p) => p.categoriaNome))

@@ -4,6 +4,7 @@ import { Filter } from "lucide-react"
 import { useEffect, useState } from "react"
 import ProductGrid from "@/components/product-grid"
 import ProductFilters from "@/components/product-filters"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
@@ -17,22 +18,45 @@ type ProdutoAPI = {
   image: string[]
 }
 
+type Filtros = {
+  categories: string[]
+  fragrances: string[]
+  sizes: string[]
+  priceRange: string[]
+}
+
 export default function ProdutosPage() {
-  const [filters, setFilters] = useState<{
-    categories: string[]
-    fragrances: string[]
-    sizes: string[]
-    priceRange: string[]
-  }>({
-    categories: [],
-    fragrances: [],
-    sizes: [],
-    priceRange: [],
-  })
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+
+  // Extrai filtros da URL (garante a fonte da verdade)
+  function getFiltersFromURL(): Filtros {
+    return {
+      categories: searchParams.getAll("categoria"),
+      fragrances: searchParams.getAll("fragrancia"),
+      sizes: searchParams.getAll("peso").map((s) => `${s}g`),
+      priceRange: searchParams.getAll("priceRange"),
+    }
+  }
+
+  // Estado local sincronizado com a URL
+  const [filters, setFilters] = useState<Filtros>(getFiltersFromURL())
   const [products, setProducts] = useState<ProdutoAPI[]>([])
   const [loading, setLoading] = useState(false)
 
-  // Recarrega produtos ao mudar filtros
+  // Atualiza filtros ao mudar URL (garante reatividade ao botão voltar/avançar do navegador)
+  useEffect(() => {
+    setFilters(getFiltersFromURL())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    searchParams.getAll("categoria").join(","),
+    searchParams.getAll("fragrancia").join(","),
+    searchParams.getAll("peso").join(","),
+    searchParams.getAll("priceRange").join(","),
+  ])
+
+  // Sempre que filtros mudam, atualiza a URL e busca os produtos
   useEffect(() => {
     const params = new URLSearchParams()
     filters.categories.forEach((c) => params.append("categoria", c))
@@ -40,13 +64,23 @@ export default function ProdutosPage() {
     filters.sizes.forEach((s) => params.append("peso", s.replace("g", "")))
     filters.priceRange.forEach((r) => params.append("priceRange", r))
 
+    // Atualiza a URL sem recarregar a página
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+
+    // Busca produtos
     setLoading(true)
     fetch(`/api/produtos?${params.toString()}`)
       .then((res) => res.json())
-      .then((data: ProdutoAPI[]) => setProducts(data))
+      .then(setProducts)
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, pathname, router])
+
+  // Quando usuário interage com os filtros, atualiza o estado (pai) → dispara atualização de URL
+  const handleFiltersChange = (newFilters: Filtros) => {
+    setFilters(newFilters)
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -76,14 +110,21 @@ export default function ProdutosPage() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[300px] bg-white">
-                  <ProductFilters onFiltersChange={setFilters} className="mt-8" />
+                  <ProductFilters
+                    onFiltersChange={handleFiltersChange}
+                    filters={filters}
+                    className="mt-8"
+                  />
                 </SheetContent>
               </Sheet>
             </div>
 
             {/* Desktop */}
             <div className="hidden lg:block">
-              <ProductFilters onFiltersChange={setFilters} />
+              <ProductFilters
+                onFiltersChange={handleFiltersChange}
+                filters={filters}
+              />
             </div>
 
             {/* Grid */}

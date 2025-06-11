@@ -13,16 +13,30 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
 
+
     // 🛠️ filtros já existentes
     const categories = searchParams.getAll('categoria')
     const fragrances = searchParams.getAll('fragrancia')
     const pesos = searchParams.getAll('peso')
     const priceRanges = searchParams.getAll('priceRange')
+    
+    console.log({ categories, fragrances, pesos, priceRanges })
+
 
     const where: any = { deletedAt: null }
-    if (categories.length) where.categoria = { nome: { in: categories } }
-    if (fragrances.length) where.fragrancia = { in: fragrances }
-    if (pesos.length) where.peso = { in: pesos.map((p) => parseFloat(p)) }
+
+    if (categories.length) {
+      where.categoria = { nome: { in: categories } }
+    }
+
+    if (fragrances.length) {
+      where.fragrancia = { in: fragrances }
+    }
+
+    if (pesos.length) {
+      where.peso = { in: pesos.map((p) => parseFloat(p)) }
+    }
+
     if (priceRanges.length) {
       where.OR = priceRanges.map((r) => {
         if (r === '0-50') return { preco: { lte: 50 } }
