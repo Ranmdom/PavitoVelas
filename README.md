@@ -103,3 +103,86 @@ Obs: eu ainda vou fazer o pente fino e botar um V de verificado e um X de falta
 - [ ] Documentação das APIs (endpoints, exemplos)
 - [ ] Guia de uso para equipe de atendimento
 - [ ] Planos de contingência e contato de suporte
+
+
+-----------------------------------------------------------------------
+
+Checklist para melhor envio 
+
+Variáveis de ambiente
+
+Confirme seu .env.local contém:
+
+bash
+Copiar
+Editar
+MELHOR_ENVIO_ACCESS_TOKEN=…
+STRIPE_SECRET_KEY=…
+STRIPE_WEBHOOK_SECRET=…
+NEXT_PUBLIC_BASE_URL=https://seusite.com
+Instalação de dependências
+
+bash
+Copiar
+Editar
+npm install stripe micro
+npm install --save-dev @types/micro
+Registrar webhook na Stripe
+
+No Dashboard da Stripe → Developers → Webhooks
+
+Aponte para https://seusite.com/api/stripe-webhook
+
+Selecione pelo menos checkout.session.completed
+
+Copie o secret e coloque em STRIPE_WEBHOOK_SECRET
+
+Endpoints de back-end
+
+ /api/shipping-options → retorna packages do Melhor Envio
+
+ /api/calculate-shipping → proxy para /shipment/calculate
+
+ /api/checkout → cria pedido + cotação + sessão Stripe
+
+ /api/stripe-webhook → reserva, paga frete e atualiza pedido
+
+Front-end: exibir opções de frete
+
+Chamar POST /api/shipping-options com { postalCode, items }
+
+Renderizar a lista de packages (serviço + preço) num dropdown ou botões
+
+Front-end: checkout
+
+Ao submeter, chamar POST /api/checkout passando { items, postalCode, shippingServiceId }
+
+Redirecionar para a url retornada (Checkout Stripe)
+
+Página de sucesso
+
+Criar rota /pedido/sucesso?session_id=…
+
+Opcional: buscar dados da Stripe (stripe.checkout.sessions.retrieve) para mostrar confirmação
+
+Testes em sandbox
+
+Verificar cotação → criação de sessão → webhook dispara reserva/pagamento → pedido atualiza para “pago”
+
+Conferir no painel Melhor Envio se o envio foi cadastrado corretamente
+
+Go-live
+
+Trocar URLs do Melhor Envio de sandbox para produção (api.melhorenvio.com.br)
+
+Usar chaves live da Stripe (sk_live_…)
+
+Atualizar NEXT_PUBLIC_BASE_URL para seu domínio definitivo
+
+Tratamento de erros & monitoramento
+
+Adicionar logs no front para falhas de fetch
+
+Configurar alertas de 500 no backend (Sentry, LogRocket…)
+
+Validar cenários de falha no webhook (retries, idempotência)
