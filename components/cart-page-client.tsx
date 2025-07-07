@@ -9,12 +9,16 @@ import { toast } from "@/hooks/use-toast"
 import CartItem from "@/components/cart-item"
 import { useSession } from "next-auth/react"
 import { Loader2 } from "lucide-react"
+import ShippingField from "@/components/shipping-field"
+import type { ShippingOption } from "@/types/shipping"
 
 export default function CheckoutForm() {
   const { items, subtotal, clearCart } = useCart()
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { data: session } = useSession()
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null)
+  const [postalCode, setPostalCode] = useState("")
 
   const handleCheckout = async () => {
     if (items.length === 0) {
@@ -75,6 +79,23 @@ export default function CheckoutForm() {
     return null
   }
 
+  const handleShippingSelect = (option: ShippingOption | null, cep: string) => {
+    setSelectedShipping(option)
+    setPostalCode(cep)
+
+    // Persistir no localStorage
+    if (option && cep) {
+      localStorage.setItem("pavito-shipping", JSON.stringify(option))
+      localStorage.setItem("pavito-postal-code", cep)
+    } else {
+      localStorage.removeItem("pavito-shipping")
+      localStorage.removeItem("pavito-postal-code")
+    }
+  }
+
+  const shippingCost = selectedShipping ? Number.parseFloat(selectedShipping.custom_price || selectedShipping.price) : 0
+  const total = subtotal + (subtotal > 150 ? 0 : shippingCost)
+
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <div className="lg:col-span-2">
@@ -99,10 +120,13 @@ export default function CheckoutForm() {
             <span>Subtotal</span>
             <span>R$ {subtotal.toFixed(2).replace(".", ",")}</span>
           </div>
-          <div className="flex justify-between text-[#631C21]/80">
-            <span>Frete</span>
-            <span>{subtotal > 150 ? "Grátis" : "Calculado no checkout"}</span>
-          </div>
+          
+              
+          <ShippingField
+            onShippingSelect={handleShippingSelect}
+            selectedShipping={selectedShipping}
+            subtotal={subtotal}
+          />
 
           <Separator className="my-4 bg-[#F4847B]/10" />
 

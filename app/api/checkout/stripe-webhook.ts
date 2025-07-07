@@ -72,15 +72,8 @@ export default async function handler(req: any, res: any) {
             },
           }
         );
-        const arrayBuffer = await labelRes.arrayBuffer();
-        const fileBuffer = Buffer.from(arrayBuffer);
-
-        // Salva o arquivo na pasta 'labels'
-        const labelsDir = path.resolve(process.cwd(), 'labels');
-        if (!fs.existsSync(labelsDir)) fs.mkdirSync(labelsDir);
-        const filePath = path.join(labelsDir, `${shipment.id}.pdf`);
-        fs.writeFileSync(filePath, fileBuffer);
-        console.log(`Etiqueta ${shipment.id} salva em ${filePath}`);
+        //const arrayBuffer = await labelRes.arrayBuffer();
+        //const fileBuffer = Buffer.from(arrayBuffer);
       }
 
       // 5) Atualiza status do pedido no banco
