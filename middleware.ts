@@ -9,10 +9,15 @@ export async function middleware(req: NextRequest) {
   const isAdmin = token?.tipo === "admin";
   const { pathname } = req.nextUrl;
 
+  // ✅ Permite acesso ao dashboard logo após login (impede redirecionamento indevido)
+  if (pathname === "/admin/dashboard") {
+    return NextResponse.next();
+  }
+
   // 1) Protege páginas admin
   if (pathname.startsWith("/admin")) {
-    if (!isAuth)   return NextResponse.redirect(new URL("/login", req.url));
-    if (!isAdmin)  return NextResponse.redirect(new URL("/",       req.url));
+    if (!isAuth)  return NextResponse.redirect(new URL("/login", req.url));
+    if (!isAdmin) return NextResponse.redirect(new URL("/", req.url));
   }
 
   // 2) Protege APIs admin
@@ -22,6 +27,7 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // 3) Protege "minha conta"
   if (pathname.startsWith("/minha-conta")) {
     if (!isAuth || !isAdmin) {
       return NextResponse.redirect(new URL("/", req.url));

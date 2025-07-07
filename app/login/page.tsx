@@ -23,7 +23,7 @@ export default function LoginPage() {
         email,
         senha,
         redirect: false,
-        callbackUrl: "/admin/dashboard",
+        callbackUrl: `${window.location.origin}/admin/dashboard`,
       });
 
       console.log(res);
