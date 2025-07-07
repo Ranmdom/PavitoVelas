@@ -29,8 +29,8 @@ export async function middleware(req: NextRequest) {
 
   // 3) Protege "minha conta"
   if (pathname.startsWith("/minha-conta")) {
-    if (!isAuth || !isAdmin) {
-      return NextResponse.redirect(new URL("/", req.url));
+    if (!isAuth) {
+      return NextResponse.redirect(new URL("/login", req.url));
     }
   }
 
