@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Calculator, Loader2, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -62,7 +61,7 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
     setShippingOptions([])
 
     try {
-      const response = await fetch("/api/shipping/calculate", {
+      const response = await fetch("/api/melhor-envio/calculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -135,7 +134,7 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
   if (isFreeShipping) {
     return (
       <div className="flex justify-between items-center text-[#631C21]/80">
-        <span>Frete</span> 
+        <span>Frete</span>
         <span className="text-green-600 font-medium">Grátis</span>
       </div>
     )
@@ -177,7 +176,7 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
           size="sm"
           className="bg-[#882335] text-white hover:bg-[#631C21] h-9 px-3"
         >
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Calculator className="h-4 w-4" />}
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Calculator className="h-4 w-4" />} 
         </Button>
       </div>
 
