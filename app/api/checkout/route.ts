@@ -1,125 +1,112 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
-import { prisma } from "@/lib/prisma" 
-import { getServerSession }          from "next-auth";
-import { authOptions }               from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 export async function POST(req: NextRequest) {
   try {
-    const { items, userId } = await req.json()
+    // 1) Recebe items, shipping selecionado e userId
+    const { items, userId, shipping } = await req.json() as {
+      items: Array<{ id: string; quantity: number; price: number; name: string; image?: string }>;
+      userId?: string;
+      shipping: { name: string; price: number };
+    }
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "Carrinho vazio" }, { status: 400 })
     }
 
-    const sessionLogin = await getServerSession(authOptions);
-    if (!sessionLogin?.user) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    // 2) Autentica usuário
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    // 3) Calcula valor total (produtos + frete)
+    const productsTotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0)
+    const totalWithShipping = productsTotal + shipping.price
 
-    
+    // 4) Cria pedido no banco
     const novoPedido = await prisma.pedido.create({
       data: {
-        usuario: { connect: { usuarioId: sessionLogin.user.id } },
-        valorTotal: Math.round(items.reduce((acc: number, item: any) => acc + item.price * item.quantity, 0)),
+        usuario: { connect: { usuarioId: BigInt(session.user.id) } },
+        valorTotal: Math.round(totalWithShipping),
         statusPedido: "pendente",
         itensPedido: {
-          create: items.map((item: any) => ({
+          create: items.map(item => ({
             quantidade: item.quantity,
             precoUnitario: Math.round(item.price),
-            produto: {
-              connect: {
-                produtoId: item.id,
-              },
-            },
-          })),
-        },
-      },
-    });
+            produto: { connect: { produtoId: BigInt(item.id) } }
+          }))
+        }
+      }
+    })
 
-    // Criar os line items para o Stripe
-    const lineItems = items.map((item: any) => {
-      const imageUrl = item.image?.startsWith("http")
-        ? encodeURI(item.image)
-        : `${origin}${item.image}`;
-    
+    // 5) Monta line items para Stripe
+    const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const lineItems = items.map(item => {
+      // Garante URL válida ou array vazio, utilizando URL constructor
+      let images: string[] = []
+      if (item.image) {
+        try {
+          const imageUrl = new URL(item.image, origin).toString()
+          images = [imageUrl]
+        } catch {
+          // imagem inválida, mantemos array vazio
+          images = []
+        }
+      }
+
       return {
         price_data: {
           currency: "brl",
           product_data: {
             name: item.name,
-            images: [imageUrl],
+            images
           },
-          unit_amount: Math.round(item.price * 100),
+          unit_amount: Math.round(item.price * 100)
         },
-        quantity: item.quantity,
-      };
-    });
-    
+        quantity: item.quantity
+      }
+    })
 
-    // Criar metadados para rastrear os itens do pedido
-    const metadata: { items: string; userId?: string } = {
-      items: JSON.stringify(
-        items.map((item: any) => ({
-          id: item.id,
-          quantity: item.quantity,
-        })),
-      ),
-    }
+    // Adiciona o frete como um item separado no Stripe
+    lineItems.push({
+      price_data: {
+        currency: "brl",
+        product_data: {
+          name: `Frete - ${shipping.name}`,
+          images: [] // Stripe exige array de imagens mesmo que vazio
+        },
+        unit_amount: Math.round(shipping.price * 100)
+      },
+      quantity: 1
+    })
 
-    // Se o usuário estiver logado, adicionar o ID do usuário aos metadados
-    if (userId) {
-      metadata.userId = userId
-    }
-    const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
-    // Criar a sessão de checkout do Stripe
-    const session = await stripe.checkout.sessions.create({
+    // 6) Cria sessão de checkout Stripe com produtos + frete
+    const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/pedido/sucesso?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/carrinho`,
-      metadata,
-      shipping_address_collection: {
-        allowed_countries: ["BR"],
+      metadata: {
+        pedidoId: novoPedido.pedidoId.toString(),
+        userId: session.user.id
       },
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            fixed_amount: {
-              amount: 0,
-              currency: "brl",
-            },
-            display_name: "Frete Grátis",
-            delivery_estimate: {
-              minimum: {
-                unit: "business_day",
-                value: 5,
-              },
-              maximum: {
-                unit: "business_day",
-                value: 10,
-              },
-            },
-          },
-        },
-      ],
-      locale: "pt-BR",
+      locale: "pt-BR"
     })
 
+    // 7) Atualiza pedido com session id do Stripe
     await prisma.pedido.update({
       where: { pedidoId: novoPedido.pedidoId },
-      data: { stripeSessionId: session.id },
-    });
+      data: { stripeSessionId: stripeSession.id }
+    })
 
-    console.log("Sessão de checkout criada:", session)
-    return NextResponse.json({ url: session.url })
+    return NextResponse.json({ url: stripeSession.url })
   } catch (error) {
     console.error("Erro ao criar sessão de checkout:", error)
-    console.log("Erro:", error)
     return NextResponse.json({ error: "Erro ao processar pagamento" }, { status: 500 })
   }
 }

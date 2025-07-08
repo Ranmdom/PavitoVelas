@@ -54,7 +54,10 @@ export default function CheckoutForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: lineItems,
-          shippingCost,
+          shipping: {
+            name: selectedShipping!.company.name,
+            price: shippingCost,
+          },
           postalCode,
           userId: session?.user?.id || null,
         }),
