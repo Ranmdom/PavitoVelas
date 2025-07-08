@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
+import React, { useState } from "react"
 import { Calculator, Loader2, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,10 +26,7 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
   const { items } = useCart()
 
   const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCEP(e.target.value)
-    setCep(formatted)
-
-    // Reset shipping when CEP changes
+    setCep(formatCEP(e.target.value))
     if (selectedShipping) {
       onShippingSelect(null, "")
       setShippingOptions([])
@@ -40,20 +36,11 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
 
   const calculateShipping = async () => {
     if (!validateCEP(cep)) {
-      toast({
-        title: "CEP inválido",
-        description: "Por favor, digite um CEP válido com 8 dígitos.",
-        variant: "destructive",
-      })
+      toast({ title: "CEP inválido", description: "Digite um CEP válido.", variant: "destructive" })
       return
     }
-
     if (items.length === 0) {
-      toast({
-        title: "Carrinho vazio",
-        description: "Adicione produtos ao carrinho para calcular o frete.",
-        variant: "destructive",
-      })
+      toast({ title: "Carrinho vazio", description: "Adicione produtos ao carrinho.", variant: "destructive" })
       return
     }
 
@@ -61,47 +48,35 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
     setShippingOptions([])
 
     try {
-      const response = await fetch("/api/melhor-envio/calculate", {
+      const resp = await fetch("/api/melhorEnvio/calculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           postalCode: cep.replace(/\D/g, ""),
-          items: items.map((item) => ({
-            id: item.id,
-            width: 10,
-            height: 8,
-            length: 10,
-            weight: Number.parseFloat(item.weight.replace(/\D/g, "")) / 1000 || 0.25,
-            insurance_value: item.price,
-            quantity: item.quantity,
-          })),
-        }),
+          items: items.map(i => ({ id: i.id, quantity: i.quantity }))
+        })
       })
 
-      const data = await response.json()
+      const data = await resp.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao calcular frete")
+      if (!resp.ok) {
+        console.error("Erro interno ao calcular frete:", data)
+        toast({ title: "Erro no cálculo", description: data.error || "Falha ao calcular frete.", variant: "destructive" })
+        return
       }
 
-      const validOptions = Array.isArray(data) ? data.filter((option: ShippingOption) => !option.error) : []
+      // Filtra apenas opções sem erro
+      const validOptions = data.filter((opt: any) => !opt.error)
+
       setShippingOptions(validOptions)
       setIsOpen(true)
 
       if (validOptions.length === 0) {
-        toast({
-          title: "Nenhuma opção disponível",
-          description: "Não encontramos opções de frete para este CEP.",
-          variant: "destructive",
-        })
+        toast({ title: "Sem opções", description: "Nenhuma opção de frete disponível.", variant: "destructive" })
       }
     } catch (error) {
-      console.error("Erro ao calcular frete:", error)
-      toast({
-        title: "Erro no cálculo",
-        description: "Ocorreu um erro ao calcular o frete. Tente novamente.",
-        variant: "destructive",
-      })
+      console.error("Erro no cálculo de frete:", error)
+      toast({ title: "Erro no cálculo", description: "Verifique seus dados e tente novamente.", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
@@ -112,28 +87,18 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
     setIsOpen(false)
     toast({
       title: "Frete selecionado",
-      description: `${option.company.name} - R$ ${Number.parseFloat(option.custom_price || option.price)
-        .toFixed(2)
-        .replace(".", ",")}`,
+      description: `${option.company.name} • R$ ${Number.parseFloat(option.custom_price || option.price).toFixed(2).replace('.', ',')}`
     })
   }
 
-  const formatDeliveryTime = (option: ShippingOption) => {
-    const time = option.custom_delivery_time || option.delivery_time
-    return `${time} dia${time > 1 ? "s" : ""} útil${time > 1 ? "eis" : ""}`
-  }
+  const formatDeliveryTime = (opt: ShippingOption) =>
+    `${opt.custom_delivery_time || opt.delivery_time} dia${(opt.custom_delivery_time || opt.delivery_time) > 1 ? 's' : ''}`
+  const formatPrice = (opt: ShippingOption) =>
+    Number.parseFloat(opt.custom_price || opt.price).toFixed(2).replace('.', ',')
 
-  const formatPrice = (option: ShippingOption) => {
-    const price = Number.parseFloat(option.custom_price || option.price)
-    return price.toFixed(2).replace(".", ",")
-  }
-
-  // Frete grátis para compras acima de R$ 150
-  const isFreeShipping = subtotal > 150
-
-  if (isFreeShipping) {
+  if (subtotal > 150) {
     return (
-      <div className="flex justify-between items-center text-[#631C21]/80">
+      <div className="flex justify-between items-center">
         <span>Frete</span>
         <span className="text-green-600 font-medium">Grátis</span>
       </div>
@@ -142,7 +107,6 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
 
   return (
     <div className="space-y-3">
-      {/* Linha principal do frete */}
       <div className="flex justify-between items-center text-[#631C21]/80">
         <span>Frete</span>
         {selectedShipping ? (
@@ -157,7 +121,6 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
         )}
       </div>
 
-      {/* Campo de CEP */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#631C21]/50" />
@@ -176,16 +139,15 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
           size="sm"
           className="bg-[#882335] text-white hover:bg-[#631C21] h-9 px-3"
         >
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Calculator className="h-4 w-4" />} 
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Calculator className="h-4 w-4" />}
         </Button>
       </div>
 
-      {/* Opções de frete */}
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleContent className="space-y-2">
           {shippingOptions.length > 0 ? (
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {shippingOptions.map((option) => (
+              {shippingOptions.map(option => (
                 <Card
                   key={`${option.company_id}-${option.id}`}
                   className="p-3 cursor-pointer transition-all duration-200 hover:shadow-sm border-[#F4847B]/20 hover:border-[#F4847B]/40"
@@ -211,7 +173,6 @@ export default function ShippingField({ onShippingSelect, selectedShipping, subt
               ))}
             </div>
           ) : (
-            shippingOptions.length === 0 &&
             isOpen && (
               <div className="text-center py-4 text-[#631C21]/70 text-sm">
                 Nenhuma opção de frete disponível para este CEP.
