@@ -5,90 +5,58 @@ import ProductCard from "@/components/product-card"
 
 interface RelatedProductsProps {
   currentProductId: string
-  category: string
 }
 
-export default function RelatedProducts({ currentProductId, category }: RelatedProductsProps) {
-  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
+interface RelatedProduct {
+  id: string
+  nome: string
+  preco: number
+  imagens: string[]
+  categoriaNome: string
+  peso?: number
+  categoria?: string
+}
+
+const colorMap: Record<string, string> = {
+  Frutal:   "#F4847B",
+  Floral:   "#CD4E65",
+  Amadeirado:"#882335",
+  Especiarias:"#D36A6A",
+}
+
+
+export default function RelatedProducts({ currentProductId }: RelatedProductsProps) {
+  const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Simulação de busca de produtos relacionados
-    // Em um ambiente real, isso seria uma chamada de API
-    const products = [
-      {
-        id: "1",
-        name: "Vela Pêssego & Baunilha",
-        price: 49.9,
-        image: "/templates/vela-1.jpeg?height=300&width=300",
-        category: "Frutal",
-        weight: "250g",
-        color: "#F4847B",
-      },
-      {
-        id: "2",
-        name: "Vela Lavanda & Bergamota",
-        price: 54.9,
-        image: "/templates/vela-1.jpeg?height=300&width=300",
-        category: "Floral",
-        weight: "250g",
-        color: "#CD4E65",
-      },
-      {
-        id: "3",
-        name: "Vela Madeira & Âmbar",
-        price: 59.9,
-        image: "/templates/vela-1.jpeg?height=300&width=300",
-        category: "Amadeirado",
-        weight: "300g",
-        color: "#882335",
-      },
-      {
-        id: "4",
-        name: "Vela Vanilla & Canela",
-        price: 49.9,
-        image: "/templates/vela-1.jpeg?height=300&width=300",
-        category: "Especiarias",
-        weight: "250g",
-        color: "#D36A6A",
-      },
-      {
-        id: "5",
-        name: "Vela Limão & Manjericão",
-        price: 45.9,
-        image: "/templates/vela-1.jpeg?height=300&width=300",
-        category: "Cítrico",
-        weight: "200g",
-        color: "#F4847B",
-      },
-      {
-        id: "6",
-        name: "Vela Rosa & Jasmim",
-        price: 59.9,
-        image: "/templates/vela-1.jpeg?height=300&width=300",
-        category: "Floral",
-        weight: "250g",
-        color: "#CD4E65",
-      },
-    ]
+    if (!currentProductId) return
 
-    // Filtra produtos da mesma categoria, excluindo o produto atual
-    const filtered = products
-      .filter((product) => product.id !== currentProductId && product.category === category)
-      .slice(0, 4)
-
-    // Se não houver produtos suficientes da mesma categoria, adiciona outros produtos
-    if (filtered.length < 4) {
-      const otherProducts = products
-        .filter((product) => product.id !== currentProductId && product.category !== category)
-        .slice(0, 4 - filtered.length)
-
-      setRelatedProducts([...filtered, ...otherProducts])
-    } else {
-      setRelatedProducts(filtered)
+    async function fetchRelated() {
+      setLoading(true)
+      try {
+        const res = await fetch(
+          `/api/produtos/relacionados?id=${encodeURIComponent(currentProductId)}`
+        )
+        if (!res.ok) throw new Error(`Status ${res.status}`)
+        const json = await res.json()
+        setRelatedProducts(json.data)
+      } catch (err: any) {
+        console.error("Erro ao buscar produtos relacionados:", err)
+        setError("Não foi possível carregar produtos relacionados.")
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [currentProductId, category])
 
-  if (relatedProducts.length === 0) {
+    fetchRelated()
+  }, [currentProductId])
+
+  if (loading) {
+    return <p>Carregando produtos relacionados...</p>
+  }
+  if (error || relatedProducts.length === 0) {
     return null
   }
 
@@ -98,15 +66,15 @@ export default function RelatedProducts({ currentProductId, category }: RelatedP
         <ProductCard
           key={product.id}
           id={product.id}
-          name={product.name}
-          price={product.price}
-          image={product.image}
-          category={product.category}
-          weight={product.weight}
-          color={product.color}
+          name={product.nome}
+          price={product.preco}
+          image={product.imagens[0]}
+          category={product.categoriaNome}
+          weight={product.peso ? `${product.peso}g` : ""}
+          color={colorMap[product.categoria ?? "Frutal"] ?? "#F4847B"}  
+
         />
       ))}
     </div>
   )
 }
-

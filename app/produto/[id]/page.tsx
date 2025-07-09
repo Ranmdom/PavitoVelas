@@ -21,23 +21,27 @@ interface Product {
 // 🟢 Função para buscar o produto na API
 async function getProductById(id: string): Promise<Product | null> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/produtos/${id}`, {
-      cache: "no-store",
-    })
-    if (!res.ok) {
-      return null
-    }
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/api/produtos/${id}`,
+      { cache: "no-store" }
+    )
+    if (!res.ok) return null
     return await res.json()
-  } catch (error) {
-    console.error("Erro ao buscar produto:", error)
+  } catch (err) {
+    console.error("Erro ao buscar produto:", err)
     return null
   }
 }
 
 
 // 🟠 Metadata puxando da API
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const product = await getProductById(params.id)
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const product = await getProductById(id)
 
   if (!product) {
     return {
@@ -96,7 +100,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
         <div className="mt-20">
           <h2 className="mb-6 text-2xl font-bold text-[#631C21]">Produtos relacionados</h2>
-          <RelatedProducts currentProductId={product.produtoId} category={product.categoriaNome || "Categoria não cadastrada"} />
+          <RelatedProducts currentProductId={product.produtoId} />
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ import { NOMEM } from 'dns'
 
 
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { searchParams } = new URL(req.url)
 
