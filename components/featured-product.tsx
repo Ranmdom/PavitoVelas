@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useCart } from "@/context/cart-context"
+import CandleLoading from "./loading/candle-loading"
+
 
 type Featured = {
   produtoId: string
@@ -51,7 +53,7 @@ export default function FeaturedProduct() {
     loadLimited()
   }, [])
 
-  if (loading) return <div>Carregando…</div>
+  if (loading) return <CandleLoading/>
   if (!product) return <div>Nenhuma vela limitada.</div>
 
   const imageUrl = product.image?.[0] ?? "/placeholder.svg"

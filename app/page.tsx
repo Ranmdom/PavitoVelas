@@ -6,8 +6,10 @@ import Newsletter from "@/components/newsletter"
 import { buttonVariants } from "@/components/ui/button"
 import { ArrowRight, Flame } from "lucide-react"
 import PopularProducts from "@/components/PopularProducts"
+import ImagemPromocional from "@/components/produtos/imagensPromocionais"
 
 export default function Home() {
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
@@ -38,16 +40,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex justify-center md:justify-end">
-            <div className="relative aspect-square w-72 overflow-hidden rounded-full bg-[#F1889C]/20 p-2 sm:w-80 md:w-96">
-              <Image
-                src="/templates/vela-1.jpeg?height=400&width=400"
-                width={400}
-                height={400}
-                alt="Vela artesanal decorativa"
-                className="rounded-full object-cover"
-                priority
-              />
-            </div>
+           <ImagemPromocional/>
           </div>
         </div>
       </section>

@@ -2,6 +2,7 @@
 
 import { Suspense } from "react"
 import ProdutosContent from "../../components/produtos/ProdutosContent"
+import CandleLoading from "@/components/loading/candle-loading"
 
 export default function ProdutosPage() {
   return (
@@ -17,7 +18,7 @@ export default function ProdutosPage() {
       </section>
 
       {/* Conteúdo com Suspense */}
-      <Suspense fallback={<div className="text-center py-10">Carregando...</div>}>
+      <Suspense fallback={<CandleLoading/>}>
         <ProdutosContent />
       </Suspense>
     </div>

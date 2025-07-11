@@ -31,7 +31,8 @@ export default function Newsletter() {
   return (
     <div className="mx-auto max-w-3xl text-center">
       <h2 className="text-3xl font-bold tracking-tighter text-[#631C21] sm:text-4xl">Fique por dentro das novidades</h2>
-      <p className="mx-auto mt-4 max-w-[600px] text-[#882335]/80">
+      <p>Siga @pavitovelas e acompanhe cada lançamento!</p>
+      {/* <p className="mx-auto mt-4 max-w-[600px] text-[#882335]/80">
         Inscreva-se para receber notícias sobre lançamentos, promoções exclusivas e dicas para aproveitar ao máximo suas
         velas.
       </p>
@@ -48,7 +49,7 @@ export default function Newsletter() {
           {isSubmitting ? "Inscrevendo..." : "Inscrever-se"}
           <Send className="ml-2 h-4 w-4" />
         </Button>
-      </form>
+      </form> */}
     </div>
   )
 }

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 import ProductCard from "@/components/product-card"
+import CandleLoading from "./loading/candle-loading"
+
 
 interface RelatedProductsProps {
   currentProductId: string
@@ -54,7 +56,7 @@ export default function RelatedProducts({ currentProductId }: RelatedProductsPro
   }, [currentProductId])
 
   if (loading) {
-    return <p>Carregando produtos relacionados...</p>
+    return <CandleLoading/>
   }
   if (error || relatedProducts.length === 0) {
     return null

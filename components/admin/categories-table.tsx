@@ -27,6 +27,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "@/hooks/use-toast"
+import CandleLoading from "../loading/candle-loading"
+
 
 export type Category = {
   categoriaId: string
@@ -205,7 +207,7 @@ export default function CategoriesTable({ onEditCategory }: CategoriesTableProps
   })
 
   if (isLoading) {
-    return <div>Carregando categorias...</div>
+    return <CandleLoading/>
   }
 
   return (

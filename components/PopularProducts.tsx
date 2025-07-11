@@ -6,6 +6,8 @@ import { ArrowRight } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
 import ProductCard from "@/components/product-card"
+import CandleLoading from "./loading/candle-loading"
+
 
 type Popular = {
   id: string
@@ -59,7 +61,7 @@ export default function PopularProducts() {
 
         {loading && (
           <div className="mt-8 flex items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-t-transparent border-[#631C21] border-solid" />
+            <CandleLoading/>
           </div>
         )}
 

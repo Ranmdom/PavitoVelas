@@ -31,6 +31,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { DetalhePedidoModal } from "./detalhe-pedido-modal"
 import { AtualizarStatusModal } from "./atualizar-status-modal"
 import { type PedidoTabela, type StatusPedido, statusPedidoMap } from "@/types/pedido"
+import CandleLoading from "../loading/candle-loading"
 
 // Função para formatar o status do pedido
 function getStatusBadge(status: StatusPedido) {
@@ -315,7 +316,7 @@ export default function RecentOrdersTable() {
             {carregando ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  Carregando pedidos...
+                  <CandleLoading/>
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (

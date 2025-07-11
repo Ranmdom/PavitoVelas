@@ -41,7 +41,7 @@ export default function ProdutosContent() {
 
   const [filters, setFilters] = useState<Filtros>(getFiltersFromURL())
   const [products, setProducts] = useState<ProdutoAPI[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setFilters(getFiltersFromURL())
