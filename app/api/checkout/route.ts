@@ -93,7 +93,13 @@ export async function POST(req: NextRequest) {
       cancel_url: `${origin}/carrinho`,
       metadata: {
         pedidoId: novoPedido.pedidoId.toString(),
-        userId: session.user.id
+        userId: session.user.id,
+        items: JSON.stringify(
+          items.map(p => ({
+          id: p.id,
+          quantity: p.quantity
+        }))
+  )
       },
       locale: "pt-BR"
     })

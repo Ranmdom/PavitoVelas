@@ -8,9 +8,10 @@ const prisma = new PrismaClient()
 // GET /api/pedidos/[id] - Listar todos os pedidos de um usuário
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { params } = await context
     const session = await getServerSession(authOptions)
 
     if (!session?.user) {

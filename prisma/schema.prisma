@@ -18,7 +18,6 @@ model Usuario {
   deletedAt        DateTime?
   tipo             String            @default("cliente")
   enderecos        Endereco[]
-  metodosPagamento MetodoPagamento[]
   pedidos          Pedido[]
 }
 
@@ -81,32 +80,17 @@ model ItemPedido {
   produto       Produto   @relation(fields: [produtoId], references: [produtoId])
 }
 
-model MetodoPagamento {
-  metodoPagamentoId BigInt      @id @default(autoincrement())
-  usuarioId         BigInt
-  nomeMetodo        String?
-  numeroCartao      String?
-  dataExpiracao     String?
-  nomeTitular       String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @default(now())
-  deletedAt         DateTime?
-  usuario           Usuario     @relation(fields: [usuarioId], references: [usuarioId])
-  pagamentos        Pagamento[]
-  stripePaymentMethodId String? // Adicionado para métodos de pagamento do Stripe
-}
+
 
 model Pagamento {
   pagamentoId       BigInt          @id @default(autoincrement())
   pedidoId          BigInt
-  metodoPagamentoId BigInt
   valor             Decimal         @db.Decimal(10, 2)
   dataPagamento     DateTime        @default(now())
   statusPagamento   String
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @default(now())
   deletedAt         DateTime?
-  metodoPagamento   MetodoPagamento @relation(fields: [metodoPagamentoId], references: [metodoPagamentoId])
   pedido            Pedido          @relation(fields: [pedidoId], references: [pedidoId])
   stripePaymentIntentId String?     // Adicionado para rastrear PaymentIntents do Stripe
 }

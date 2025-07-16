@@ -1,3 +1,4 @@
+// app/api/webhook/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
@@ -67,6 +68,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   const items = JSON.parse(metadata.items)
+  console.log("Itens do pedido:", items)
   const userId = metadata.userId ? BigInt(metadata.userId) : null
 
   // Se não houver usuário, não podemos criar um pedido no banco
@@ -80,7 +82,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     const pedido = await prisma.pedido.create({
       data: {
         usuarioId: userId,
-        statusPedido: "Pagamento confirmado",
+        statusPedido: "pagamento_confirmado",
         valorTotal: Number(session.amount_total) / 100, // Converter de centavos para reais
         itensPedido: {
           create: await Promise.all(
@@ -101,13 +103,6 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
               }
             }),
           ),
-        },
-        pagamentos: {
-          create: {
-            metodoPagamentoId: BigInt(1), // ID padrão para pagamentos Stripe
-            valor: Number(session.amount_total) / 100,
-            statusPagamento: "Confirmado",
-          },
         },
       },
     })
