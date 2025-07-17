@@ -64,7 +64,7 @@ export default function CustomerAccountPage() {
                 Acompanhe o status dos seus pedidos e histórico de compras
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent> 
               <CustomerOrders />
             </CardContent>
           </Card>

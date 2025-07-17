@@ -1,8 +1,6 @@
-// components/CheckoutForm.tsx
-
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
 import { Button } from "@/components/ui/button"
@@ -11,8 +9,9 @@ import { toast } from "@/hooks/use-toast"
 import CartItem from "@/components/cart-item"
 import { useSession } from "next-auth/react"
 import { Loader2 } from "lucide-react"
-import ShippingField from "@/components/shipping-field"
 import type { ShippingOption } from "@/types/shipping"
+import AddressSelector from "./carrinho/adress-selector"
+import ShippingDialog from "./carrinho/shipping-dialog"
 
 export default function CheckoutForm() {
   const { items, subtotal, clearCart } = useCart()
@@ -22,7 +21,13 @@ export default function CheckoutForm() {
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null)
   const [postalCode, setPostalCode] = useState("")
 
-  // Calcula custo e total
+  // Formata preço e tempo de entrega
+  const formatPrice = (opt: ShippingOption) =>
+    Number.parseFloat(opt.custom_price || opt.price).toFixed(2).replace('.', ',')
+  const formatDeliveryTime = (opt: ShippingOption) =>
+    `${opt.custom_delivery_time || opt.delivery_time} dia${(opt.custom_delivery_time || opt.delivery_time) > 1 ? 's' : ''}`
+
+  // Calcula custo total
   const shippingCost = selectedShipping
     ? Number.parseFloat(selectedShipping.custom_price || selectedShipping.price)
     : 0
@@ -40,7 +45,6 @@ export default function CheckoutForm() {
 
     try {
       setIsLoading(true)
-
       const lineItems = items.map(item => ({
         id: item.id,
         name: item.name,
@@ -64,7 +68,6 @@ export default function CheckoutForm() {
       })
 
       if (!response.ok) throw new Error("Erro ao criar sessão de checkout")
-
       const { url } = await response.json()
       window.location.href = url
     } catch (err) {
@@ -79,11 +82,14 @@ export default function CheckoutForm() {
     }
   }
 
-  // Se carrinho vazio, redireciona
-  if (items.length === 0) {
-    router.push("/carrinho")
-    return null
-  }
+  useEffect(() => {
+    if (items.length === 0) {
+      router.push("/carrinho")
+    }
+  }, [items, router])
+
+  // Se carrinho vazio, nada a renderizar
+  if (items.length === 0) return null
 
   const handleShippingSelect = (option: ShippingOption | null, cep: string) => {
     setSelectedShipping(option)
@@ -98,8 +104,9 @@ export default function CheckoutForm() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-3">
-      <div className="lg:col-span-2">
+    <div className="grid gap-8 lg:grid-cols-12">
+      {/* Resumo + Endereços */}
+      <div className="space-y-8 lg:col-span-8">
         <div className="rounded-lg border border-[#F4847B]/10 bg-white/60 backdrop-blur-sm">
           <div className="p-6">
             <h2 className="text-lg font-medium text-[#631C21]">Resumo do Pedido</h2>
@@ -111,30 +118,50 @@ export default function CheckoutForm() {
             ))}
           </div>
         </div>
+
+        <div className="rounded-lg border border-[#F4847B]/10 bg-white/60 backdrop-blur-sm">
+          <div className="p-6">
+            <h2 className="text-lg font-medium text-[#631C21]">Endereços</h2>
+          </div>
+          <Separator className="bg-[#F4847B]/10" />
+          <AddressSelector onSelect={addr => handleShippingSelect(null, addr.cep)} />
+        </div>
       </div>
 
-      <div className="h-fit rounded-lg border border-[#F4847B]/10 bg-white/60 backdrop-blur-sm p-6">
+      {/* Pagamento */}
+      <div className="h-fit rounded-lg border border-[#F4847B]/10 bg-white/60 backdrop-blur-sm p-6 lg:col-span-4">
         <h2 className="mb-4 text-lg font-medium text-[#631C21]">Pagamento</h2>
-
         <div className="space-y-3">
+          {/* Subtotal */}
           <div className="flex justify-between text-[#631C21]/80">
             <span>Subtotal</span>
-            <span>R$ {subtotal.toFixed(2).replace(".", ",")}</span>
+            <span>R$ {subtotal.toFixed(2).replace('.', ',')}</span>
           </div>
 
-          <ShippingField
-            onShippingSelect={handleShippingSelect}
-            selectedShipping={selectedShipping}
-            subtotal={subtotal}
-          />
+          {/* Frete */}
+          <div className="flex justify-between items-center text-[#631C21]/80">
+            <span>Frete</span>
+            {selectedShipping ? (
+              <div className="text-right">
+                <div className="font-medium text-[#631C21]">R$ {formatPrice(selectedShipping)}</div>
+                <div className="text-xs text-[#631C21]/70">
+                  {selectedShipping.company.name} - {formatDeliveryTime(selectedShipping)}
+                </div>
+              </div>
+            ) : (
+              <span className="text-[#631C21]/70">A calcular</span>
+            )}
+          </div>
 
           <Separator className="my-4 bg-[#F4847B]/10" />
 
+          {/* Total */}
           <div className="flex justify-between font-medium text-[#631C21]">
             <span>Total</span>
-            <span>R$ {total.toFixed(2).replace(".", ",")}</span>
+            <span>R$ {total.toFixed(2).replace('.', ',')}</span>
           </div>
 
+          {/* Botão Pago */}
           <div className="pt-4">
             <Button
               className="w-full bg-[#882335] text-white hover:bg-[#631C21]"
@@ -142,9 +169,8 @@ export default function CheckoutForm() {
               disabled={isLoading || (!selectedShipping && subtotal <= 150)}
             >
               {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processando...
+                <>              
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando...
                 </>
               ) : (
                 "Pagar com Stripe"
@@ -154,11 +180,19 @@ export default function CheckoutForm() {
               Pagamento seguro processado pelo Stripe
             </p>
             <p className="mt-2 text-center text-xs text-[#631C21]/70">
-              Frete grátis para compras acima de R$ 150,00
+              Frete grátis para compras acima de R$ 150,00
             </p>
           </div>
         </div>
       </div>
+
+      {/* Modal de frete */}
+      <ShippingDialog
+        addressPostalCode={postalCode}
+        selectedShipping={selectedShipping}
+        subtotal={subtotal}
+        onShippingSelect={handleShippingSelect}
+      />
     </div>
   )
 }
