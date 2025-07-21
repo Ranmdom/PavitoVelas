@@ -143,7 +143,7 @@ export default function ShippingDialog({
         )}
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button variant="ghost" onClick={() => setOpen(false)}>{subtotal > 150 ? "Entendido":'Cancelar'}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

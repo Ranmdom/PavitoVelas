@@ -59,8 +59,8 @@ export default function CheckoutForm() {
         body: JSON.stringify({
           items: lineItems,
           shipping: {
-            name: selectedShipping!.company.name,
-            price: shippingCost,
+            name: selectedShipping?.company.name || "Gratuito Promocional",
+            price: shippingCost || 0,
           },
           postalCode,
           userId: session?.user?.id || null,
@@ -139,19 +139,32 @@ export default function CheckoutForm() {
           </div>
 
           {/* Frete */}
-          <div className="flex justify-between items-center text-[#631C21]/80">
-            <span>Frete</span>
-            {selectedShipping ? (
-              <div className="text-right">
-                <div className="font-medium text-[#631C21]">R$ {formatPrice(selectedShipping)}</div>
-                <div className="text-xs text-[#631C21]/70">
-                  {selectedShipping.company.name} - {formatDeliveryTime(selectedShipping)}
-                </div>
+          {!postalCode ? (
+            <div className="text-right">
+              <div className="font-medium text-[#631C21]">
+                Escolha ou cadastre um endereço
               </div>
-            ) : (
-              <span className="text-[#631C21]/70">A calcular</span>
-            )}
-          </div>
+            </div>
+
+          ) : subtotal > 150 ? (
+            <div className="text-right">
+              <div className="font-medium text-green-600">R$ 0,00</div>
+              <div className="text-xs text-[#631C21]/70">Frete grátis</div>
+            </div>
+
+          ) : selectedShipping ? (
+            <div className="text-right">
+              <div className="font-medium text-[#631C21]">
+                R$ {formatPrice(selectedShipping)}
+              </div>
+              <div className="text-xs text-[#631C21]/70">
+                {selectedShipping.company.name} – {formatDeliveryTime(selectedShipping)}
+              </div>
+            </div>
+
+          ) : (
+            <span className="text-[#631C21]/70">A calcular</span>
+          )}
 
           <Separator className="my-4 bg-[#F4847B]/10" />
 
