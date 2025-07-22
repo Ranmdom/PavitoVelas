@@ -47,7 +47,7 @@ export default function ImagemPromocional() {
             }
 
             setCurrentIndex(nextIndex)
-        }, 5000)
+        }, 3000)
 
         return () => clearInterval(interval)
     }, [currentIndex, showFront, imagens])

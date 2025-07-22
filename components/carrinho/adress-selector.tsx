@@ -42,17 +42,18 @@ export interface Address {
 
 // Props do componente
 interface AddressSelectorProps {
-    onSelect: (address: Address) => void
-    initialSelectedId?: number
+    onSelectAdress: (address: Address) => void
+    initialSelectedId?: number | null
+    handleShippingSelect?: (option: any) => void
 }
 
-export default function AddressSelector({ onSelect, initialSelectedId }: AddressSelectorProps) {
+export default function AddressSelector({ onSelectAdress, initialSelectedId = null, handleShippingSelect }: AddressSelectorProps) {
     const { data: session, status } = useSession()
     const userId = session?.user?.id
 
     const [isLoading, setIsLoading] = useState(true)
     const [addresses, setAddresses] = useState<Address[]>([])
-    const [selectedId, setSelectedId] = useState<number | null>(initialSelectedId || null)
+    const [selectedId, setSelectedId] = useState<number | null>(initialSelectedId)
 
     const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -68,6 +69,10 @@ export default function AddressSelector({ onSelect, initialSelectedId }: Address
         estado: "",
         cep: "",
     })
+
+    useEffect(() => {
+        setSelectedId(initialSelectedId)
+    }, [initialSelectedId])
 
     const fetchAddresses = useCallback(async () => {
         setIsLoading(true)
@@ -94,7 +99,7 @@ export default function AddressSelector({ onSelect, initialSelectedId }: Address
     // Selecionar endereço
     const handleSelect = (addr: Address) => {
         setSelectedId(addr.enderecoId)
-        onSelect(addr)
+        onSelectAdress(addr)
         toast({ title: "Endereço selecionado" })
     }
 
@@ -255,8 +260,11 @@ export default function AddressSelector({ onSelect, initialSelectedId }: Address
                 ))}
             </div>
 
+
             {/* Dialog para adicionar/editar */}
             <AddressDialog address={addressForm} open={isAddressDialogOpen} onOpenChange={setIsAddressDialogOpen} onSuccess={fetchAddresses}/>
+
+
             <Dialog open={isAddressDialogOpen} onOpenChange={setIsAddressDialogOpen}>
                 <DialogContent>
                     <DialogHeader>

@@ -25,6 +25,7 @@ interface ShippingDialogProps {
   subtotal: number
   /** CEP vindo do AddressSelector */
   addressPostalCode?: string
+  onDialogClose?: (shouldReset: boolean) => void
 }
 
 export default function ShippingDialog({
@@ -32,6 +33,7 @@ export default function ShippingDialog({
   selectedShipping,
   subtotal,
   addressPostalCode,
+  onDialogClose
 }: ShippingDialogProps) {
   const [open, setOpen] = useState(false)
   const [cep, setCep] = useState("")
@@ -53,6 +55,13 @@ export default function ShippingDialog({
     if (open) calculateShipping()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
+
+  const handleClose = () => {
+    setOpen(false)
+    if (onDialogClose) {
+      onDialogClose(subtotal < 150)
+    }
+  }
 
   const calculateShipping = async () => {
     if (subtotal > 150) return // grátis
@@ -143,7 +152,7 @@ export default function ShippingDialog({
         )}
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>{subtotal > 150 ? "Entendido":'Cancelar'}</Button>
+          <Button variant="ghost" onClick={() => handleClose()}>{subtotal > 150 ? "Entendido":'Cancelar'}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -19,6 +19,7 @@ export default function CheckoutForm() {
   const router = useRouter()
   const { data: session } = useSession()
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null)
+  const [selectedAddress, setSelectedAddress] = useState<any | null>(null)
   const [postalCode, setPostalCode] = useState("")
 
   // Formata preço e tempo de entrega
@@ -52,7 +53,7 @@ export default function CheckoutForm() {
         quantity: item.quantity,
         image: item.image,
       }))
-
+      console.log(selectedShipping)
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,7 +70,7 @@ export default function CheckoutForm() {
 
       if (!response.ok) throw new Error("Erro ao criar sessão de checkout")
       const { url } = await response.json()
-      window.location.href = url
+      // window.location.href = url
     } catch (err) {
       console.error("Erro no checkout:", err)
       toast({
@@ -91,16 +92,13 @@ export default function CheckoutForm() {
   // Se carrinho vazio, nada a renderizar
   if (items.length === 0) return null
 
-  const handleShippingSelect = (option: ShippingOption | null, cep: string) => {
+  const handleShippingSelect = (option: any) => {
     setSelectedShipping(option)
-    setPostalCode(cep)
-    if (option && cep) {
-      localStorage.setItem("pavito-shipping", JSON.stringify(option))
-      localStorage.setItem("pavito-postal-code", cep)
-    } else {
-      localStorage.removeItem("pavito-shipping")
-      localStorage.removeItem("pavito-postal-code")
-    }
+  }
+
+  const handleAddressSelect = (address: any) => {
+    setSelectedAddress(address)
+    setPostalCode(address.cep)
   }
 
   return (
@@ -124,7 +122,7 @@ export default function CheckoutForm() {
             <h2 className="text-lg font-medium text-[#631C21]">Endereços</h2>
           </div>
           <Separator className="bg-[#F4847B]/10" />
-          <AddressSelector onSelect={addr => handleShippingSelect(null, addr.cep)} />
+          <AddressSelector onSelectAdress={handleAddressSelect} initialSelectedId={selectedAddress?.enderecoId ?? null} />
         </div>
       </div>
 
@@ -205,6 +203,11 @@ export default function CheckoutForm() {
         selectedShipping={selectedShipping}
         subtotal={subtotal}
         onShippingSelect={handleShippingSelect}
+        onDialogClose={() => {
+          setSelectedAddress(null)
+          setPostalCode('')
+          setSelectedShipping(null)
+        }}
       />
     </div>
   )
