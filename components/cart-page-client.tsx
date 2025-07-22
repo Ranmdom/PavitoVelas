@@ -53,7 +53,7 @@ export default function CheckoutForm() {
         quantity: item.quantity,
         image: item.image,
       }))
-      console.log(selectedShipping)
+
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,12 +65,13 @@ export default function CheckoutForm() {
           },
           postalCode,
           userId: session?.user?.id || null,
+          address: selectedAddress,
         }),
       })
 
       if (!response.ok) throw new Error("Erro ao criar sessão de checkout")
       const { url } = await response.json()
-      // window.location.href = url
+      window.location.href = url
     } catch (err) {
       console.error("Erro no checkout:", err)
       toast({

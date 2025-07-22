@@ -25,6 +25,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             produto: true,
           },
         },
+        EnderecoPedido: true, 
       },
     })
 
@@ -39,12 +40,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     // Buscar o endereço principal do usuário
-    const endereco = await prisma.endereco.findFirst({
-      where: {
-        usuarioId: pedido.usuarioId,
-        deletedAt: null,
-      },
-    })
+    const enderecoPedido = pedido.EnderecoPedido[0] ?? null;
 
     // Formatar o pedido para a resposta
     const pedidoFormatado = {
@@ -69,15 +65,15 @@ export async function GET(request: Request, { params }: { params: { id: string }
           imagens: item.produto.imagens,
         },
       })),
-      endereco: endereco
+      endereco: enderecoPedido
         ? {
-            enderecoId: endereco.enderecoId.toString(),
-            logradouro: endereco.logradouro,
-            numero: endereco.numero,
-            bairro: endereco.bairro,
-            cidade: endereco.cidade,
-            estado: endereco.estado,
-            cep: endereco.cep,
+          enderecopedidoid: enderecoPedido.enderecopedidoid.toString(),
+          logradouro: enderecoPedido.logradouro,
+          numero: enderecoPedido.numero,
+          bairro: enderecoPedido.bairro,
+          cidade: enderecoPedido.cidade,
+          estado: enderecoPedido.estado,
+          cep: enderecoPedido.cep,
           }
         : null,
     }

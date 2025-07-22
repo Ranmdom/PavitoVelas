@@ -62,6 +62,14 @@ interface Order {
   statusPedido: OrderStatus
   valorTotal: number
   itensPedido: OrderItem[]
+  endereco?: {
+    logradouro: string
+    numero:    string
+    bairro:    string
+    cidade:    string
+    estado:    string
+    cep:       string
+  } | null
 }
 
 // Componente principal
@@ -112,31 +120,7 @@ export default function CustomerOrders() {
       }
     }
 
-    // Para fins de demonstração, vamos simular dados
-    const simulateOrders = () => {
-      const statuses: OrderStatus[] = ["pendente", "pago", "enviado", "entregue", "cancelado"]
-      const mockOrders: Order[] = Array.from({ length: 12 }, (_, i) => {
-        const date = new Date()
-        date.setDate(date.getDate() - i * 5)
-        
-        return {
-          pedidoId: 1000 + i,
-          dataPedido: date.toISOString(),
-          statusPedido: statuses[Math.floor(Math.random() * statuses.length)],
-          valorTotal: Math.floor(Math.random() * 30000 + 5000) / 100,
-          itensPedido: Array.from({ length: Math.floor(Math.random() * 3) + 1 }, (_, j) => ({
-            itemPedidoId: j,
-            produtoId: Math.floor(Math.random() * 100),
-            nome: ["Vela Aromática Lavanda", "Vela Decorativa Rústica", "Vela Flutuante", "Vela Perfumada Baunilha"][Math.floor(Math.random() * 4)],
-            quantidade: Math.floor(Math.random() * 3) + 1,
-            precoUnitario: Math.floor(Math.random() * 5000 + 2000) / 100
-          }))
-        }
-      })
-      
-      setOrders(mockOrders)
-      setIsLoading(false)
-    }
+
     
     // Simular dados após um pequeno delay para simular carregamento
     // setTimeout(simulateOrders, 1000)
@@ -186,9 +170,19 @@ export default function CustomerOrders() {
   }
 
   // Visualizar detalhes do pedido
-  const handleViewDetails = (order: Order) => {
-    setSelectedOrder(order)
-    setIsDetailsOpen(true)
+  const handleViewDetails = async (order: Order) => {
+    setIsLoading(true)
+    try {
+      const res = await fetch(`/api/pedidos/${order.pedidoId}`)
+      if (!res.ok) throw new Error("Erro ao buscar detalhes")
+      const data: any = await res.json()
+      setSelectedOrder(data)
+      setIsDetailsOpen(true)
+    } catch (err) {
+      toast({ title: "Não foi possível carregar o pedido." })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Formatar status do pedido
@@ -409,6 +403,9 @@ export default function CustomerOrders() {
         </Pagination>
       )}
 
+
+
+
       {/* Modal de detalhes do pedido */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="max-w-3xl">
@@ -424,6 +421,24 @@ export default function CustomerOrders() {
           {selectedOrder && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
+                {/* ENDEREÇO */}
+                <div>
+                  <h4 className="font-medium text-[#631C21] mb-1">Endereço de Entrega</h4>
+                  {selectedOrder.endereco ? (
+                    <>
+                      <p>
+                        {selectedOrder.endereco.logradouro}, {selectedOrder.endereco.numero}
+                      </p>
+                      <p>
+                        {selectedOrder.endereco.bairro} — {selectedOrder.endereco.cidade}/{selectedOrder.endereco.estado}
+                      </p>
+                      <p>CEP: {selectedOrder.endereco.cep}</p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-[#631C21]/70">Nenhum endereço encontrado.</p>
+                  )}
+                </div>
+
                 <div>
                   <h4 className="font-medium text-[#631C21] mb-1">Status</h4>
                   <div>{formatStatus(selectedOrder.statusPedido)}</div>

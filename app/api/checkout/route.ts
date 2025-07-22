@@ -7,10 +7,11 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 export async function POST(req: NextRequest) {
   try {
     // 1) Recebe items, shipping selecionado e userId
-    const { items, userId, shipping } = await req.json() as {
+    const { items, userId, shipping, address } = await req.json() as {
       items: Array<{ id: string; quantity: number; price: number; name: string; image?: string }>;
       userId?: string;
       shipping: { name: string; price: number };
+      address?: { cep: string; logradouro: string; numero: string; bairro: string; cidade: string; estado: string };
     }
 
     if (!items || items.length === 0) {
@@ -39,6 +40,16 @@ export async function POST(req: NextRequest) {
             precoUnitario: Math.round(item.price),
             produto: { connect: { produtoId: BigInt(item.id) } }
           }))
+        },
+        EnderecoPedido: {
+          create: {
+            cep: address?.cep,
+            logradouro: address?.logradouro,
+            numero: address?.numero,
+            bairro: address?.bairro,
+            cidade: address?.cidade,
+            estado: address?.estado
+          }
         }
       }
     })

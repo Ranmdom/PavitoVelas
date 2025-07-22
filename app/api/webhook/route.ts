@@ -66,7 +66,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     console.error("Metadados ausentes na sessão de checkout")
     return
   }
-
+  const pedidoId = BigInt(metadata.pedidoId);
   const items = JSON.parse(metadata.items)
   console.log("Itens do pedido:", items)
   const userId = metadata.userId ? BigInt(metadata.userId) : null
@@ -79,35 +79,19 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   try {
     // Criar um novo pedido no banco de dados
-    const pedido = await prisma.pedido.create({
+    await prisma.pedido.update({
+      where: { pedidoId },
       data: {
-        usuarioId: userId,
         statusPedido: "pagamento_confirmado",
-        valorTotal: Number(session.amount_total) / 100, // Converter de centavos para reais
-        itensPedido: {
-          create: await Promise.all(
-            items.map(async (item: { id: string; quantity: number }) => {
-              // Buscar informações do produto
-              const produto = await prisma.produto.findUnique({
-                where: { produtoId: BigInt(item.id) },
-              })
-
-              if (!produto) {
-                throw new Error(`Produto não encontrado: ${item.id}`)
-              }
-
-              return {
-                produtoId: BigInt(item.id),
-                quantidade: item.quantity,
-                precoUnitario: Number(produto.preco),
-              }
-            }),
-          ),
-        },
+        // opcional: guarde o ID do payment_intent para auditoria
+        // stripePaymentIntentId: typeof session.payment_intent === "string"
+        //   ? session.payment_intent
+        //   : session.payment_intent?.id,
+        updatedAt: new Date(),
       },
-    })
+    });
 
-    console.log(`Pedido criado com sucesso: ${pedido.pedidoId}`)
+    console.log(`Pedido atualizado: ${pedidoId.toString()}`)
   } catch (error) {
     console.error("Erro ao criar pedido:", error)
     throw error

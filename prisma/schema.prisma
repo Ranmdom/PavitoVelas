@@ -8,17 +8,17 @@ datasource db {
 }
 
 model Usuario {
-  usuarioId        BigInt            @id @default(autoincrement())
-  nome             String
-  sobrenome        String
-  email            String            @unique
-  senhaHash        String
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @default(now())
-  deletedAt        DateTime?
-  tipo             String            @default("cliente")
-  enderecos        Endereco[]
-  pedidos          Pedido[]
+  usuarioId BigInt     @id @default(autoincrement())
+  nome      String
+  sobrenome String
+  email     String     @unique
+  senhaHash String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now())
+  deletedAt DateTime?
+  tipo      String     @default("cliente")
+  enderecos Endereco[]
+  pedidos   Pedido[]
 }
 
 model Categoria {
@@ -45,26 +45,27 @@ model Produto {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now())
   deletedAt   DateTime?
-  imagens     String[] 
+  estoque     Int?         @default(1)
+  imagens     String[]
   itensPedido ItemPedido[]
-  estoque     Int?
   categoria   Categoria?   @relation(fields: [categoriaId], references: [categoriaId])
 }
 
 model Pedido {
-  pedidoId     BigInt       @id @default(autoincrement())
-  usuarioId    BigInt
-  statusPedido String
-  dataPedido   DateTime     @default(now())
-  dataEnvio    DateTime?
-  valorTotal   Decimal      @db.Decimal(10, 2)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @default(now())
-  deletedAt    DateTime?
-  itensPedido  ItemPedido[]
-  pagamentos   Pagamento[]
-  usuario      Usuario      @relation(fields: [usuarioId], references: [usuarioId])
-  stripeSessionId String?   @unique // Adicionado para rastrear sessões do Stripe
+  pedidoId        BigInt           @id @default(autoincrement())
+  usuarioId       BigInt
+  statusPedido    String
+  dataPedido      DateTime         @default(now())
+  dataEnvio       DateTime?
+  valorTotal      Decimal          @db.Decimal(10, 2)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @default(now())
+  deletedAt       DateTime?
+  stripeSessionId String?          @unique
+  EnderecoPedido  EnderecoPedido[]
+  itensPedido     ItemPedido[]
+  pagamentos      Pagamento[]
+  usuario         Usuario          @relation(fields: [usuarioId], references: [usuarioId])
 }
 
 model ItemPedido {
@@ -80,19 +81,17 @@ model ItemPedido {
   produto       Produto   @relation(fields: [produtoId], references: [produtoId])
 }
 
-
-
 model Pagamento {
-  pagamentoId       BigInt          @id @default(autoincrement())
-  pedidoId          BigInt
-  valor             Decimal         @db.Decimal(10, 2)
-  dataPagamento     DateTime        @default(now())
-  statusPagamento   String
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @default(now())
-  deletedAt         DateTime?
-  pedido            Pedido          @relation(fields: [pedidoId], references: [pedidoId])
-  stripePaymentIntentId String?     // Adicionado para rastrear PaymentIntents do Stripe
+  pagamentoId           BigInt    @id @default(autoincrement())
+  pedidoId              BigInt
+  valor                 Decimal   @db.Decimal(10, 2)
+  dataPagamento         DateTime  @default(now())
+  statusPagamento       String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @default(now())
+  deletedAt             DateTime?
+  stripePaymentIntentId String?
+  pedido                Pedido    @relation(fields: [pedidoId], references: [pedidoId])
 }
 
 model Endereco {
@@ -108,4 +107,19 @@ model Endereco {
   updatedAt  DateTime  @default(now())
   deletedAt  DateTime?
   usuario    Usuario   @relation(fields: [usuarioId], references: [usuarioId])
+}
+
+model EnderecoPedido {
+  enderecopedidoid BigInt    @id(map: "enderecopedidos_pkey") @default(autoincrement())
+  pedidoId         BigInt
+  logradouro       String?
+  numero           String?
+  bairro           String?
+  cidade           String?
+  estado           String?
+  cep              String?
+  createdAt        DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime? @default(now()) @db.Timestamp(6)
+  deletedAt        DateTime? @db.Timestamp(6)
+  Pedido           Pedido    @relation(fields: [pedidoId], references: [pedidoId], onDelete: Cascade, onUpdate: NoAction, map: "fk_pedido")
 }
