@@ -1,27 +1,21 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts"
 
-// Dados de exemplo para o gráfico
-const data = [
-  { name: "01/05", vendas: 1200 },
-  { name: "02/05", vendas: 900 },
-  { name: "03/05", vendas: 1500 },
-  { name: "04/05", vendas: 1800 },
-  { name: "05/05", vendas: 1200 },
-  { name: "06/05", vendas: 600 },
-  { name: "07/05", vendas: 1100 },
-  { name: "08/05", vendas: 1400 },
-  { name: "09/05", vendas: 1600 },
-  { name: "10/05", vendas: 1800 },
-  { name: "11/05", vendas: 2000 },
-  { name: "12/05", vendas: 1700 },
-  { name: "13/05", vendas: 1300 },
-  { name: "14/05", vendas: 1900 },
-]
+interface SalesChartProps {
+  data: { date: string; total: number }[]
+}
 
-export default function SalesChart() {
+export default function SalesChart({ data }: SalesChartProps) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -32,11 +26,24 @@ export default function SalesChart() {
     return null
   }
 
+  // Transforma [{ date: "2025-05-01", total: 1200 }, …]
+  // em [{ name: "01/05", vendas: 1200 }, …]
+  const chartData = data.map(({ date, total }) => ({
+    name: date.split("-").reverse().join("/").slice(0, 5),
+    vendas: total,
+  }))
+
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+      <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F4847B20" />
-        <XAxis dataKey="name" stroke="#631C21" fontSize={12} tickLine={false} axisLine={false} />
+        <XAxis
+          dataKey="name"
+          stroke="#631C21"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+        />
         <YAxis
           stroke="#631C21"
           fontSize={12}
@@ -57,4 +64,3 @@ export default function SalesChart() {
     </ResponsiveContainer>
   )
 }
-
