@@ -1,7 +1,7 @@
-'use-client'
 import type { Metadata } from "next"
 import ProductDetails from "@/components/product-details"
 import RelatedProducts from "@/components/related-products"
+import { headers } from "next/headers"
 // Simulação de busca de produto pelo ID
 
 interface Product {
@@ -22,8 +22,14 @@ interface Product {
 // 🟢 Função para buscar o produto na API
 async function getProductById(id: string): Promise<Product | null> {
   try {
+    // Pega o domínio atual (funciona tanto local quanto prod)
+    const headersList = await headers()
+    const host = headersList.get("host")
+    const protocol = host?.includes("localhost") ? "http" : "https"
+    const baseUrl = `${protocol}://${host}`
+
     const res = await fetch(
-      `/api/produtos/${id}`,
+      `${baseUrl}/api/produtos/${id}`,
       { cache: "no-store" }
     )
     if (!res.ok) return null
