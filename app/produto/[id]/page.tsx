@@ -1,3 +1,4 @@
+'use-client'
 import type { Metadata } from "next"
 import ProductDetails from "@/components/product-details"
 import RelatedProducts from "@/components/related-products"
