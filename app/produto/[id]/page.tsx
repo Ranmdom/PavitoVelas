@@ -22,7 +22,7 @@ interface Product {
 async function getProductById(id: string): Promise<Product | null> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/api/produtos/${id}`,
+      `/api/produtos/${id}`,
       { cache: "no-store" }
     )
     if (!res.ok) return null
