@@ -22,6 +22,7 @@ export default function CheckoutForm() {
   const [selectedAddress, setSelectedAddress] = useState<any | null>(null)
   const [postalCode, setPostalCode] = useState("")
 
+
   // Formata preço e tempo de entrega
   const formatPrice = (opt: ShippingOption) =>
     Number.parseFloat(opt.custom_price || opt.price).toFixed(2).replace('.', ',')
@@ -36,48 +37,71 @@ export default function CheckoutForm() {
 
   const handleCheckout = async () => {
     if (items.length === 0) {
-      toast({
-        title: "Carrinho vazio",
-        description: "Adicione produtos ao carrinho antes de finalizar a compra.",
-        variant: "destructive",
-      })
+      toast({ title: "Carrinho vazio", description: "Adicione produtos antes.", variant: "destructive" })
       return
     }
-
+    if (!selectedShipping && subtotal <= 150) {
+      toast({ title: "Selecione frete", description: "Escolha uma opção de frete.", variant: "destructive" })
+      return
+    }
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const lineItems = items.map(item => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image,
-      }))
-
-      const response = await fetch("/api/checkout", {
+      // 1) Cria o pedido e session Stripe
+      const res1 = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: lineItems,
+          items: items.map(i => ({
+            id:       i.id,
+            name:     i.name,
+            price:    i.price,
+            quantity: i.quantity,
+            image:    i.image
+          })),
           shipping: {
-            name: selectedShipping?.company.name || "Gratuito Promocional",
-            price: shippingCost || 0,
+            name:  selectedShipping?.company.name || "Frete Grátis",
+            price: selectedShipping
+                      ? parseFloat(selectedShipping.custom_price || selectedShipping.price)
+                      : 0
           },
           postalCode,
-          userId: session?.user?.id || null,
-          address: selectedAddress,
-        }),
+          userId:  session?.user?.id || null,
+          address: selectedAddress
+        })
       })
+      const { url, pedidoId } = await res1.json();
+      if (!pedidoId) throw new Error("pedidoId não retornado");
+      if (!res1.ok) throw new Error("Erro ao criar pedido")
 
-      if (!response.ok) throw new Error("Erro ao criar sessão de checkout")
-      const { url } = await response.json()
+      // 2) Insere o frete / declara produtos no MelhorEnvio
+      const res2 = await fetch("/api/melhorEnvio/InserirFretes", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toPostal:   postalCode.replace(/\D/g, ""),
+          items:      items.map(i => ({ id: i.id, quantity: i.quantity })),
+          serviceId:  selectedShipping!.id,
+          options:    {
+            receipt:        selectedShipping!.additional_services.receipt,
+            own_hand:       selectedShipping!.additional_services.own_hand,
+            reverse:        selectedShipping!.additional_services.collect,
+            non_commercial: true
+          },
+          pedidoId    // usa o pedidoId que acabou de receber do /api/checkout
+        })
+      })
+      const data2 = await res2.json()
+      if (!res2.ok) throw new Error(data2.error || "Erro ao registrar frete")
+
+      // 3) Redireciona pro Stripe
       window.location.href = url
+
     } catch (err) {
       console.error("Erro no checkout:", err)
       toast({
-        title: "Erro no checkout",
-        description: "Ocorreu um erro ao processar seu pagamento. Tente novamente.",
-        variant: "destructive",
+        title:       "Falha no checkout",
+        description: (err as Error).message,
+        variant:     "destructive"
       })
     } finally {
       setIsLoading(false)

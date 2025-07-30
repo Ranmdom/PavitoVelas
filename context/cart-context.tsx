@@ -15,6 +15,16 @@ export interface CartItem {
   color: string
 }
 
+export interface Address {
+  cep:        string
+  logradouro: string
+  numero:     string
+  bairro?:    string
+  cidade:     string
+  estado:     string
+  cpf:        string
+}
+
 interface CartContextType {
   items: CartItem[]
   addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void
@@ -23,23 +33,27 @@ interface CartContextType {
   clearCart: () => void
   itemCount: number
   subtotal: number
+  address: Address | null
+  setAddress: (address: Address) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [address, setAddress] = useState<Address | null>(null)
   const [mounted, setMounted] = useState(false)
 
   // Carregar carrinho do localStorage quando o componente montar
   useEffect(() => {
     setMounted(true)
-    const storedCart = localStorage.getItem("pavito-cart")
-    if (storedCart) {
+    const stored = localStorage.getItem("pavito-cart")
+    if (stored) {
       try {
-        setItems(JSON.parse(storedCart))
-      } catch (error) {
-        console.error("Erro ao carregar carrinho:", error)
+        const parsed = JSON.parse(stored)
+        setItems(parsed.items || [])
+        setAddress(parsed.address || null)
+      } catch {
         localStorage.removeItem("pavito-cart")
       }
     }
@@ -47,10 +61,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Salvar carrinho no localStorage quando mudar
   useEffect(() => {
-    if (mounted) {
-      localStorage.setItem("pavito-cart", JSON.stringify(items))
-    }
-  }, [items, mounted])
+    if (!mounted) return
+    localStorage.setItem(
+      "pavito-cart",
+      JSON.stringify({ items, address })
+    )
+  }, [items, address, mounted])
 
   // Adicionar item ao carrinho
   const addItem = (item: Omit<CartItem, "quantity">, quantity = 1) => {
@@ -138,6 +154,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clearCart,
         itemCount,
         subtotal,
+        // expor o address e o setter
+        address,
+        setAddress
       }}
     >
       {children}

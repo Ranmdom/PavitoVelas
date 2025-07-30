@@ -11,6 +11,7 @@ model Usuario {
   usuarioId BigInt     @id @default(autoincrement())
   nome      String
   sobrenome String
+  cpf       String?    @db.VarChar(11)
   email     String     @unique
   senhaHash String
   celular   String?
@@ -67,6 +68,9 @@ model Pedido {
   itensPedido     ItemPedido[]
   pagamentos      Pagamento[]
   usuario         Usuario          @relation(fields: [usuarioId], references: [usuarioId])
+
+  
+  shipments       Shipment[]       // ponta inversa para o model Shipment
 }
 
 model ItemPedido {
@@ -124,3 +128,22 @@ model EnderecoPedido {
   deletedAt        DateTime? @db.Timestamp(6)
   Pedido           Pedido    @relation(fields: [pedidoId], references: [pedidoId], onDelete: Cascade, onUpdate: NoAction, map: "fk_pedido")
 }
+
+model Shipment {
+  shipmentId           BigInt   @id @default(autoincrement()) @map("shipment_id")
+  pedidoId             BigInt                         @map("pedido_id")
+  melhorEnvioQuoteId   Int?                           @map("melhor_envio_quote_id")
+  melhorEnvioOrderId   String   @unique                 @map("melhor_envio_order_id")
+  etiquetaUrl          String                        @map("etiqueta_url")
+  status               String   @default("created")
+  createdAt            DateTime @default(now())        @map("created_at")
+  updatedAt            DateTime @updatedAt             @map("updated_at")
+
+  pedido               Pedido   @relation(fields: [pedidoId], references: [pedidoId])
+
+  @@index([pedidoId], map: "shipments_pedido_id_index")
+  @@map("shipments")
+}
+
+
+

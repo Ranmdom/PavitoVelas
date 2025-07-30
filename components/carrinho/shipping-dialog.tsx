@@ -39,7 +39,7 @@ export default function ShippingDialog({
   const [cep, setCep] = useState("")
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const { items } = useCart()
+  const { items, address, setAddress } = useCart()
 
   // Ao receber novo endereço, formata CEP e abre diálogo
   useEffect(() => {
@@ -101,15 +101,29 @@ export default function ShippingDialog({
   }
 
   const handleSelect = (opt: ShippingOption) => {
-    onShippingSelect(opt, cep)
-    setOpen(false)
+  if (!cep) {
     toast({
-      title: "Frete selecionado",
-      description: `${opt.company.name} • R$ ${Number.parseFloat(opt.custom_price || opt.price)
-        .toFixed(2)
-        .replace('.', ',')}`,
-    })
+      title: "CEP inválido",
+      description: "Por favor, digite um CEP antes de selecionar o frete.",
+      variant: "destructive",
+    });
+    return;
   }
+  const toPostal = cep.replace(/\D/g, "");
+
+  // só seleciona e fecha — sem chamar API aqui!
+  onShippingSelect(opt, toPostal);
+  setOpen(false);
+
+  toast({
+    title: "Frete selecionado",
+    description: `${opt.company.name} • R$ ${Number.parseFloat(
+      opt.custom_price || opt.price
+    )
+      .toFixed(2)
+      .replace(".", ",")}`,
+  });
+};
 
   const fmtTime = (o: ShippingOption) =>
     `${o.custom_delivery_time || o.delivery_time} dia${(o.custom_delivery_time || o.delivery_time) > 1 ? 's' : ''}`

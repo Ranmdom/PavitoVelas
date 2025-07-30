@@ -1,3 +1,5 @@
+export const runtime = 'node'
+
 // app/api/webhook/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
@@ -60,41 +62,65 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  // Extrair metadados da sessão
-  const metadata = session.metadata
-  if (!metadata || !metadata.items) {
-    console.error("Metadados ausentes na sessão de checkout")
-    return
-  }
-  const pedidoId = BigInt(metadata.pedidoId);
-  const items = JSON.parse(metadata.items)
-  console.log("Itens do pedido:", items)
-  const userId = metadata.userId ? BigInt(metadata.userId) : null
+  const meta = session.metadata!;
+  const pedidoId = BigInt(meta.pedidoId!);
+  const userId   = meta.userId ? BigInt(meta.userId) : null;
+  const quoteId  = meta.shippingOptionId!; // string
 
-  // Se não houver usuário, não podemos criar um pedido no banco
   if (!userId) {
-    console.log("Pedido de usuário não autenticado")
-    return
+    console.log("Pedido sem usuário autenticado, pulando geração de etiqueta");
+    return;
   }
 
+  // 1) Atualiza status do pedido
+  await prisma.pedido.update({
+    where: { pedidoId },
+    data: {
+      statusPedido: "pagamento_confirmado",
+      updatedAt:    new Date(),
+    },
+  });
+  console.log(`Pedido ${pedidoId} marcado como pago.`);
+
+  // 2) Gera etiqueta no Melhor Envio
   try {
-    // Criar um novo pedido no banco de dados
-    await prisma.pedido.update({
-      where: { pedidoId },
+    const resp = await fetch(
+      "https://sandbox.melhorenvio.com.br/api/v2/me/shipment/generate",
+      {
+        method: "POST",
+        headers: {
+          "Accept":        "application/json",
+          "Content-Type":  "application/json",
+          "Authorization": `Bearer ${process.env.MELHOR_ENVIO_TOKEN}`,
+          "User-Agent":    "PavitoVelas (suporte@pavito.com)",
+        },
+        body: JSON.stringify({ orders: [quoteId] }),
+      }
+    );
+
+    const data = await resp.json();
+    if (!resp.ok) {
+      console.error("❌ Erro MelhorEnvio:", data);
+      return;
+    }
+
+    // 3) Persiste o Shipment no banco
+    const ship = data.shipments[0];
+    await prisma.shipment.create({
       data: {
-        statusPedido: "pagamento_confirmado",
-        // opcional: guarde o ID do payment_intent para auditoria
-        // stripePaymentIntentId: typeof session.payment_intent === "string"
-        //   ? session.payment_intent
-        //   : session.payment_intent?.id,
-        updatedAt: new Date(),
+        pedidoId,
+        melhorEnvioQuoteId: parseInt(quoteId, 10),
+        melhorEnvioOrderId: ship.id,
+        etiquetaUrl:        ship.label_url,
+        status:             ship.status,
       },
     });
 
-    console.log(`Pedido atualizado: ${pedidoId.toString()}`)
-  } catch (error) {
-    console.error("Erro ao criar pedido:", error)
-    throw error
+    console.log(
+      `Etiqueta gerada e salva para pedido ${pedidoId}: shipmentId=${ship.id}`
+    );
+  } catch (err) {
+    console.error("❌ Falha ao gerar etiqueta:", err);
   }
 }
 
