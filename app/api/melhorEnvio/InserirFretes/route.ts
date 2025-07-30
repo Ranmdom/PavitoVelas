@@ -65,7 +65,7 @@ export async function POST(req: Request) {
   };
 
   // 4) Chama o /me/cart do MelhorEnvio
-  const resp = await fetch(`"https://sandbox.melhorenvio.com.br/api/v2"/me/cart`, {
+  const resp = await fetch("https://sandbox.melhorenvio.com.br/api/v2/me/cart", {
     method: "POST",
     headers: {
       Accept:        "application/json",
