@@ -7,28 +7,33 @@ import { jsonResponse } from '@/utils/jsonResponse'
 
 export async function POST(req: NextRequest) {
   try {
-    const { nome, sobrenome, email, senha } = await req.json()
+    // 1) Puxa o CPF junto com os outros campos
+    const { nome, sobrenome, email, senha, cpf } = await req.json()
 
-    if (!nome || !sobrenome || !email || !senha) {
+    // 2) Valida
+    if (!nome || !sobrenome || !email || !senha || !cpf) {
       return NextResponse.json({ error: 'Dados incompletos.' }, { status: 400 })
     }
+    // (Opcional) validar formato de CPF aqui, ex: /^\d{11}$/
 
-    // Verifica se o email já existe
+    // 3) Verifica email existente
     const existe = await prisma.usuario.findUnique({ where: { email } })
     if (existe) {
       return NextResponse.json({ error: 'Email já cadastrado.' }, { status: 400 })
     }
 
-    // Gera hash da senha
+    // 4) Hash da senha
     const salt = await bcrypt.genSalt(10)
     const senhaHash = await bcrypt.hash(senha, salt)
 
+    // 5) Cria usuário incluindo o CPF
     const novoUsuario = await prisma.usuario.create({
       data: {
         nome,
         sobrenome,
         email,
         senhaHash,
+        cpf: cpf.replace(/\D/g, '')   // armazena só dígitos
       },
     })
 
