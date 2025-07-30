@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -17,6 +16,7 @@ export default function CustomerRegisterForm() {
   const [formData, setFormData] = useState({
     nome: "",
     sobrenome: "",
+    cpf: "",
     email: "",
     senha: "",
     confirmarSenha: "",
@@ -32,7 +32,7 @@ export default function CustomerRegisterForm() {
     setError(null)
 
     // Validações básicas
-    if (!formData.nome || !formData.sobrenome || !formData.email || !formData.senha) {
+    if (!formData.nome || !formData.sobrenome || !formData.cpf || !formData.email || !formData.senha) {
       setError("Todos os campos são obrigatórios.")
       return
     }
@@ -51,15 +51,14 @@ export default function CustomerRegisterForm() {
       setIsLoading(true)
       const response = await fetch("/api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nome: formData.nome,
           sobrenome: formData.sobrenome,
+          cpf: formData.cpf.replace(/\D/g, ""),  // limpa formatação
           email: formData.email,
           senha: formData.senha,
-          tipo: "cliente", // Tipo padrão para clientes
+          tipo: "cliente"
         }),
       })
 
@@ -69,7 +68,6 @@ export default function CustomerRegisterForm() {
         throw new Error(data.error || "Erro ao cadastrar usuário.")
       }
 
-      // Redireciona para login após cadastro bem-sucedido
       router.push("/login?cadastro=sucesso")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ocorreu um erro ao cadastrar.")
@@ -119,6 +117,22 @@ export default function CustomerRegisterForm() {
         </div>
       </div>
 
+      {/* Novo campo CPF */}
+      <div className="space-y-2">
+        <Label htmlFor="cpf" className="text-[#631C21]">
+          CPF
+        </Label>
+        <Input
+          id="cpf"
+          name="cpf"
+          placeholder="000.000.000-00"
+          value={formData.cpf}
+          onChange={handleChange}
+          className="border-[#F4847B]/30 focus-visible:ring-[#882335]"
+          required
+        />
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="email" className="text-[#631C21]">
           Email
@@ -141,14 +155,14 @@ export default function CustomerRegisterForm() {
         </Label>
         <Input
           id="senha"
-          name="senha"
-          type="password"
-          placeholder="Crie uma senha segura"
-          value={formData.senha}
-          onChange={handleChange}
-          className="border-[#F4847B]/30 focus-visible:ring-[#882335]"
-          required
-        />
+            name="senha"
+            type="password"
+            placeholder="Crie uma senha segura"
+            value={formData.senha}
+            onChange={handleChange}
+            className="border-[#F4847B]/30 focus-visible:ring-[#882335]"
+            required
+          />
       </div>
 
       <div className="space-y-2">
@@ -173,4 +187,3 @@ export default function CustomerRegisterForm() {
     </form>
   )
 }
-
