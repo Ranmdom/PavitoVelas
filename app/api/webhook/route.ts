@@ -10,6 +10,7 @@ import type Stripe from "stripe"
 export const config = {
   api: {
     bodyParser: false,
+    runtime: 'nodejs'
   },
 }
 
