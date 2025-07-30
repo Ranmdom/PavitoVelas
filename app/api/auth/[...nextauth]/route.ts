@@ -11,6 +11,7 @@ declare module "next-auth" {
       id: string;
       tipo: string;
       nome: string;
+      celular: string | null;
     } & DefaultSession["user"];
   }
 }
@@ -49,6 +50,7 @@ export const authOptions = {
           nome: usuario.nome,
           email: usuario.email,
           tipo: usuario.tipo,
+          celular: usuario.celular || null,
         };
       },
     }),
@@ -59,6 +61,9 @@ export const authOptions = {
       if (user) {
         token.userId = user.id;
         token.tipo = user.tipo;
+        token.nome = user.nome;
+        token.email = user.email;
+        token.celular = user.celular || null;
       }
       return token;
     },
@@ -66,6 +71,9 @@ export const authOptions = {
       if (session.user) {
         session.user.id = token.userId as string;
         session.user.tipo = token.tipo as string;
+        session.user.nome = token.nome as string;
+        session.user.email = token.email as string;
+        session.user.celular = token.celular as string | null;
       }
       return session;
     },

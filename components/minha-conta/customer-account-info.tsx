@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,34 +17,77 @@ export default function CustomerAccountInfo() {
   const user = session?.user ?? null
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: user?.nome || "",
-    email: user?.email || "",
-    phone: "",
+    nome: "",
+    email:  "",
+    celular: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   })
 
+  useEffect(() => {
+    if (session?.user) {
+      setFormData((prev) => ({
+        ...prev,
+        nome: session.user.nome || "",
+        email: session.user.email || "",
+        celular: formatPhone(session.user.celular || ""),
+      }))
+    }
+  }, [session])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+
+    const formattedValue = name === "celular" ? formatPhone(value) : value
+
+    setFormData((prev) => ({ ...prev, [name]: formattedValue }))
   }
 
-  const handlePersonalInfoSubmit = (e: React.FormEvent) => {
+  const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulação de atualização de dados
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      const res = await fetch(`/api/usuarios/${user?.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nome: formData.nome,
+          celular: formData.celular,
+        }),
+      })
+
+      if (!res.ok) {
+        throw new Error('Erro ao atualizar usuário.')
+      }
+
       toast({
         title: "Informações atualizadas",
         description: "Suas informações pessoais foram atualizadas com sucesso.",
       })
-    }, 1000)
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const formatPhone = (value: string) => {
+    return value
+      .replace(/\D/g, "") // Remove tudo que não for dígito
+      .replace(/^(\d{2})(\d)/, "($1) $2") // Coloca parênteses nos dois primeiros dígitos
+      .replace(/(\d{5})(\d)/, "$1-$2") // Adiciona o traço depois do quinto dígito
+      .slice(0, 15) // Limita o tamanho total
+  }
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (formData.newPassword !== formData.confirmPassword) {
@@ -58,21 +101,40 @@ export default function CustomerAccountInfo() {
 
     setIsLoading(true)
 
-    // Simulação de atualização de senha
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      const res = await fetch(`/api/usuarios/${user?.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+        }),
+      })
+
+      if (!res.ok) throw new Error()
+
+      toast({
+        title: "Senha atualizada",
+        description: "Sua senha foi atualizada com sucesso.",
+      })
+
       setFormData((prev) => ({
         ...prev,
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       }))
+    } catch (error) {
       toast({
-        title: "Senha atualizada",
-        description: "Sua senha foi atualizada com sucesso.",
+        title: "Erro ao atualizar senha",
+        description: "Tente novamente.",
+        variant: "destructive",
       })
-    }, 1000)
+    } finally {
+      setIsLoading(false)
+    }
   }
+
 
   return (
     <div className="space-y-8">
@@ -81,11 +143,11 @@ export default function CustomerAccountInfo() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome</Label>
+            <Label htmlFor="nome">Nome</Label>
             <Input
-              id="name"
-              name="name"
-              value={formData.name}
+              id="nome"
+              name="nome"
+              value={formData.nome}
               onChange={handleChange}
               className="border-[#F4847B]/30"
             />
@@ -105,11 +167,11 @@ export default function CustomerAccountInfo() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Telefone</Label>
+            <Label htmlFor="celular">Telefone</Label>
             <Input
-              id="phone"
-              name="phone"
-              value={formData.phone}
+              id="celular"
+              name="celular"
+              value={formData.celular}
               onChange={handleChange}
               placeholder="(00) 00000-0000"
               className="border-[#F4847B]/30"

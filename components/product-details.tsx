@@ -70,12 +70,12 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     )
   }
 
-  const addToWishlist = () => {
-    toast({
-      title: "Produto adicionado à lista de desejos",
-      description: `${product.name} foi adicionado à sua lista de desejos.`,
-    })
-  }
+  // const addToWishlist = () => {
+  //   toast({
+  //     title: "Produto adicionado à lista de desejos",
+  //     description: `${product.name} foi adicionado à sua lista de desejos.`,
+  //   })
+  // }
 
   return (
     <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
@@ -201,14 +201,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 <ShoppingBag className="mr-2 h-4 w-4" />
                 Adicionar ao carrinho
               </Button>
-              <Button
+              {/* <Button
                 variant="outline"
                 size="icon"
                 className="border-[#631C21]/20 text-[#631C21]"
                 onClick={addToWishlist}
               >
                 <Heart className="h-4 w-4" />
-              </Button>
+              </Button> */}
             </div>
           </div>
 
