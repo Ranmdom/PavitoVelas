@@ -100,16 +100,63 @@ export default function ShippingDialog({
     }
   }
 
-  const handleSelect = (opt: ShippingOption) => {
-    onShippingSelect(opt, cep)
-    setOpen(false)
+  const handleSelect = async (opt: ShippingOption) => {
+  // limpa o CEP só com dígitos
+  const toPostal = cep.replace(/\D/g, "");
+
+  // monta volumes a partir dos dados que já vêm em opt.packages
+  const volumes = opt.packages[0].products.map((prod: any) => ({
+    height:          prod.height,
+    width:           prod.width,
+    length:          prod.length,
+    weight:          parseFloat(prod.weight),          // em kg
+    insurance_value: parseFloat(prod.insurance_value), // valor assegurado
+    quantity:        prod.quantity
+  }));
+
+  // mapeia os serviços adicionais para o payload
+  const options = {
+    receipt:       opt.additional_services.receipt,
+    own_hand:      opt.additional_services.own_hand,
+    reverse:       opt.additional_services.collect,
+    non_commercial: true
+  };
+
+  try {
+    // insere o frete no carrinho da sua API
+    const resp = await fetch("/api/melhorEnvio/InserirFretes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        toPostal,
+        serviceId: opt.id,
+        volumes,
+        options
+      })
+    });
+    if (!resp.ok) throw new Error("Falha ao inserir frete");
+
+    // se deu certo, atualiza o state e fecha o modal
+    onShippingSelect(opt, toPostal);
+    setOpen(false);
     toast({
       title: "Frete selecionado",
-      description: `${opt.company.name} • R$ ${Number.parseFloat(opt.custom_price || opt.price)
+      description: `${opt.company.name} • R$ ${parseFloat(
+        opt.custom_price || opt.price
+      )
         .toFixed(2)
-        .replace('.', ',')}`,
-    })
+        .replace(".", ",")}`
+    });
+  } catch (error) {
+    console.error("Erro ao inserir frete:", error);
+    toast({
+      title: "Erro no frete",
+      description: "Não foi possível adicionar o frete ao carrinho.",
+      variant: "destructive"
+    });
   }
+};
+
 
   const fmtTime = (o: ShippingOption) =>
     `${o.custom_delivery_time || o.delivery_time} dia${(o.custom_delivery_time || o.delivery_time) > 1 ? 's' : ''}`

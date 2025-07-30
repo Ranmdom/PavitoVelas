@@ -1,3 +1,5 @@
+export const runtime = 'node'
+
 // app/api/webhook/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
