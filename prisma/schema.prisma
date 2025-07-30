@@ -11,6 +11,7 @@ model Usuario {
   usuarioId BigInt     @id @default(autoincrement())
   nome      String
   sobrenome String
+  cpf       String?    @db.VarChar(11)
   email     String     @unique
   senhaHash String
   createdAt DateTime   @default(now())
