@@ -1,16 +1,15 @@
-export const runtime = 'node'
+export const runtime = 'nodejs'
 
 // app/api/webhook/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import type Stripe from "stripe"
-
+ 
 // Desativar o bodyParser para webhooks do Stripe
 export const config = {
   api: {
     bodyParser: false,
-    runtime: 'nodejs'
   },
 }
 
