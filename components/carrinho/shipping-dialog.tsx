@@ -102,56 +102,62 @@ export default function ShippingDialog({
 
   const handleSelect = async (opt: ShippingOption) => {
     if (!cep) {
-    toast({
-      title: "CEP inválido",
-      description: "Por favor, digite um CEP antes de selecionar o frete.",
-      variant: "destructive",
-    });
-    return;
-  }
-  const toPostal = cep.replace(/\D/g, "");
+      toast({
+        title: "CEP inválido",
+        description: "Por favor, digite um CEP antes de selecionar o frete.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const toPostal = cep.replace(/\D/g, "");
 
-  // monta apenas items, service e options
-  const payload = {
-    toPostal,
-    cpf:      cep.replace(/\D/g, ""),    // <— novo!
-    items:    items.map(i => ({ id: i.id, quantity: i.quantity })),
-    serviceId:opt.id,
-    options:  {
-      receipt:        opt.additional_services.receipt,
-      own_hand:       opt.additional_services.own_hand,
-      reverse:        opt.additional_services.collect,
-      non_commercial: true
+    const payload = {
+      toPostal,
+      items:     items.map(i => ({ id: i.id, quantity: i.quantity })),
+      serviceId: opt.id,
+      options: {
+        receipt:        opt.additional_services.receipt,
+        own_hand:       opt.additional_services.own_hand,
+        reverse:        opt.additional_services.collect,
+        non_commercial: true
+      },     // agora usando o pedidoId que vem das props
+    };
+
+    try {
+      const resp = await fetch("/api/melhorEnvio/InserirFretes", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(payload)
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.error || "Falha ao inserir frete");
+      }
+
+      // data = { cart, products, orderId }
+      // você pode armazenar orderId no seu state/context para uso futuro
+      const { orderId } = data;
+
+      onShippingSelect(opt, toPostal);
+      setOpen(false);
+      toast({
+        title:       "Frete selecionado",
+        description: `${opt.company.name} • R$ ${parseFloat(
+          opt.custom_price || opt.price
+        )
+          .toFixed(2)
+          .replace(".", ",")}`
+      });
+    } catch (error) {
+      console.error("Erro ao inserir frete:", error);
+      toast({
+        title:       "Erro no frete",
+        description: "Não foi possível adicionar o frete ao carrinho.",
+        variant:     "destructive"
+      });
     }
   };
 
-  try {
-    const resp = await fetch("/api/melhorEnvio/InserirFretes", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify(payload)
-    });
-    if (!resp.ok) throw new Error("Falha ao inserir frete");
-
-    onShippingSelect(opt, toPostal);
-    setOpen(false);
-    toast({
-      title:       "Frete selecionado",
-      description: `${opt.company.name} • R$ ${parseFloat(
-        opt.custom_price || opt.price
-      )
-        .toFixed(2)
-        .replace(".", ",")}`
-    });
-  } catch (error) {
-    console.error("Erro ao inserir frete:", error);
-    toast({
-      title:       "Erro no frete",
-      description: "Não foi possível adicionar o frete ao carrinho.",
-      variant:     "destructive"
-    });
-  }
-};
 
 
   const fmtTime = (o: ShippingOption) =>
