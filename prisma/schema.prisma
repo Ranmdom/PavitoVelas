@@ -129,18 +129,20 @@ model EnderecoPedido {
 }
 
 model Shipment {
-  shipmentId            BigInt    @id @default(autoincrement())
-  pedidoId              BigInt
-  melhorEnvioQuoteId    Int?
-  melhorEnvioOrderId    Int       @unique
-  etiquetaUrl           String
-  status                String    @default("created")
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  shipmentId           BigInt   @id @default(autoincrement()) @map("shipment_id")
+  pedidoId             BigInt                         @map("pedido_id")
+  melhorEnvioQuoteId   Int?                           @map("melhor_envio_quote_id")
+  melhorEnvioOrderId   String   @unique                 @map("melhor_envio_order_id")
+  etiquetaUrl          String                        @map("etiqueta_url")
+  status               String   @default("created")
+  createdAt            DateTime @default(now())        @map("created_at")
+  updatedAt            DateTime @updatedAt             @map("updated_at")
 
-  pedido                Pedido    @relation(fields: [pedidoId], references: [pedidoId])
- @@index([pedidoId])
- @@map("shipments")
+  pedido               Pedido   @relation(fields: [pedidoId], references: [pedidoId])
+
+  @@index([pedidoId], map: "shipments_pedido_id_index")
+  @@map("shipments")
 }
+
 
 

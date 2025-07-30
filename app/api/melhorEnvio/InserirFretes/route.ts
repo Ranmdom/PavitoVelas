@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 
+
+
 const TOKEN = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;
 const BASEURL = "https://sandbox.melhorenvio.com.br/api/v2";
 
@@ -25,6 +27,7 @@ export async function POST(req: Request) {
       pedidoId?: string | number;
     };
 
+    
     // 2) autentica o usuário
     const session = await getServerSession(authOptions);
     if (!session?.user) {

@@ -121,7 +121,10 @@ export async function POST(req: NextRequest) {
       data: { stripeSessionId: stripeSession.id }
     })
 
-    return NextResponse.json({ url: stripeSession.url })
+    return NextResponse.json({
+      url: stripeSession.url,
+      pedidoId: novoPedido.pedidoId.toString()
+    });
   } catch (error) {
     console.error("Erro ao criar sessão de checkout:", error)
     return NextResponse.json({ error: "Erro ao processar pagamento" }, { status: 500 })

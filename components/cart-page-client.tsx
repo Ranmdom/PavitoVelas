@@ -69,7 +69,8 @@ export default function CheckoutForm() {
           address: selectedAddress
         })
       })
-      const { url, pedidoId } = await res1.json()
+      const { url, pedidoId } = await res1.json();
+      if (!pedidoId) throw new Error("pedidoId não retornado");
       if (!res1.ok) throw new Error("Erro ao criar pedido")
 
       // 2) Insere o frete / declara produtos no MelhorEnvio
