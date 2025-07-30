@@ -1,4 +1,4 @@
-export const runtime = 'node'
+export const runtime = 'nodejs'
 
 // app/api/webhook/route.ts
 import { type NextRequest, NextResponse } from "next/server"
