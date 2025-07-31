@@ -5,63 +5,63 @@ Checklist:
 
 Obs: eu ainda vou fazer o pente fino e botar um V de verificado e um X de falta
 ## 1. Funcionalidades de Conta de Usuário
-- [x ] Cadastro de usuário (fluxo de criação de conta)
-- [x ] Login e logout
+- [x] Cadastro de usuário (fluxo de criação de conta)
+- [x] Login e logout
 - [ ] Recuperação de senha por e-mail
-- [x ] Atualização de perfil (nome, e-mail, senha, foto)
+- [x] Atualização de perfil (nome, e-mail, senha, foto)
 - [ ] Verificação de e-mail (link de confirmação)
 
 ## 2. Catálogo de Produtos
-- [x ] Listagem de produtos por categoria
-- [x ] Busca por nome, filtros e ordenação
-- [x ] Páginas individuais de produto (imagens, descrição, preço, estoque)
-- [x ] Variações de produto (tamanho, cor) e disponibilidade
-- [x ] Produtos relacionados/sugeridos
+- [x] Listagem de produtos por categoria
+- [x] Busca por nome, filtros e ordenação
+- [x] Páginas individuais de produto (imagens, descrição, preço, estoque)
+- [x] Variações de produto (tamanho, cor) e disponibilidade
+- [x] Produtos relacionados/sugeridos
 
 ## 3. Carrinho de Compras
-- [x ] Adicionar e remover itens
-- [x ] Atualizar quantidades
-- [x ] Cálculo automático de subtotal, frete e impostos
+- [x] Adicionar e remover itens
+- [x] Atualizar quantidades
+- [x] Cálculo automático de subtotal, frete e impostos
 - [ ] Mensagens de estoque insuficiente
-- [x ] Persistência do carrinho (após logout ou fechamento do navegador)
+- [x] Persistência do carrinho (após logout ou fechamento do navegador)
 
 ## 4. Checkout e Pagamentos
-- [x ] Seleção/gerenciamento de endereços de entrega
-- [x ] Cálculo de frete (tabelas, correio, transportadora)
-- [x ] Integração Stripe Checkout (pagamento aprovado e recusado)
+- [x] Seleção/gerenciamento de endereços de entrega
+- [x] Cálculo de frete (tabelas, correio, transportadora)
+- [x] Integração Stripe Checkout (pagamento aprovado e recusado)
 - [ ] Boleto bancário (geração, vencimento, baixa automática)
 - [ ] PIX (ou outro meio de pagamento)
 - [ ] Testes de 3D Secure e autenticação adicional
-- [x ] Fluxos de falha (cartão vencido, saldo insuficiente)
+- [x] Fluxos de falha (cartão vencido, saldo insuficiente)
 - [ ] Reembolsos (parcial e total)
 
 ## 5. Pedidos e Notificações
-- [x ] Geração de pedido com número único
+- [x] Geração de pedido com número único
 - [ ] Status do pedido (pendente, pago, em transporte, entregue)
 - [ ] E-mails transacionais (confirmação, envio, cancelamento)
-- [x ] Histórico de pedidos no painel do cliente
-- [x ] Tela administrativa de gestão de pedidos
+- [x] Histórico de pedidos no painel do cliente
+- [x] Tela administrativa de gestão de pedidos
 
 ## 6. UX/UI e Responsividade
-- [x ] Layout em desktop, tablet e mobile
-- [x ] Compatibilidade cross-browser (Chrome, Firefox, Safari, Edge)
-- [x ] Validações de formulário e mensagens de erro claras
-- [x ] Tempo de carregamento de imagens e lazy loading
-- [x ] Navegação, breadcrumbs e links internos
+- [x] Layout em desktop, tablet e mobile
+- [x] Compatibilidade cross-browser (Chrome, Firefox, Safari, Edge)
+- [x] Validações de formulário e mensagens de erro claras
+- [x] Tempo de carregamento de imagens e lazy loading
+- [x] Navegação, breadcrumbs e links internos
 - [ ] Feedback visual em interações (botões, loading spinners)
 
 ## 7. Segurança
-- [x ] HTTPS em todas as páginas (SSL configurado)
-- [x ] Validação de entradas no front-end e back-end
+- [x] HTTPS em todas as páginas (SSL configurado)
+- [x] Validação de entradas no front-end e back-end
 - [ ] Proteção contra CSRF e XSS
 - [ ] Proteção contra SQL Injection
 - [ ] Políticas de senha (complexidade, bloqueio após tentativas)
-- [x ] Autorização de rotas (acesso restrito para áreas administrativas)
+- [x] Autorização de rotas (acesso restrito para áreas administrativas)
 
 ## 8. Performance
-- [x ] Tempo de carregamento da home e páginas críticas (< 2 s)
+- [x] Tempo de carregamento da home e páginas críticas (< 2 s)
 - [ ] Minificação e bundling de CSS/JS
-- [x ] Compressão de imagens (WebP, lazy load)
+- [x] Compressão de imagens (WebP, lazy load)
 - [ ] Cache HTTP e CDN configurados
 - [ ] Monitoramento de uso de recursos (CPU, memória)
 
@@ -73,15 +73,15 @@ Obs: eu ainda vou fazer o pente fino e botar um V de verificado e um X de falta
 - [ ] Open Graph e Twitter Cards para redes sociais
 
 ## 10. Acessibilidade
-- [x ] Contraste de cores adequado
-- [x ] Navegação por teclado completa
-- [x ] Labels em todos os campos de formulário
-- [x ] Textos alternativos (alt) em imagens
-- [ ] Uso correto de roles e atributos ARIA
+- [x] Contraste de cores adequado
+- [x] Navegação por teclado completa
+- [x] Labels em todos os campos de formulário
+- [x] Textos alternativos (alt) em imagens
+- [x] Uso correto de roles e atributos ARIA
 
 ## 11. Integrações Externas
-- [ ] ERP/CRM (sincronização de clientes e pedidos)
-- [ ] Sistema de estoque (atualização de disponibilidade)
+- [x] ERP/CRM (sincronização de clientes e pedidos)
+- [x] Sistema de estoque (atualização de disponibilidade)
 - [ ] Ferramentas de e-mail marketing (Mailchimp, RD Station)
 - [ ] Google Analytics / Google Tag Manager
 - [ ] Chat ao vivo ou suporte (Zendesk, Intercom)
@@ -93,13 +93,13 @@ Obs: eu ainda vou fazer o pente fino e botar um V de verificado e um X de falta
 - [ ] Uptime e performance (Pingdom, UptimeRobot)
 
 ## 13. Infraestrutura e Deploy
-- [ ] Ambientes de staging e produção separados
+- [x] Ambientes de staging e produção separados
 - [ ] Pipeline de CI/CD com testes automatizados
-- [ ] Scripts de build e deploy documentados
+- [x] Scripts de build e deploy documentados
 - [ ] Plano de rollback em caso de falha
 
 ## 14. Documentação e Suporte
-- [ ] Manual de instalação e setup local
+- [x] Manual de instalação e setup local
 - [ ] Documentação das APIs (endpoints, exemplos)
 - [ ] Guia de uso para equipe de atendimento
 - [ ] Planos de contingência e contato de suporte
