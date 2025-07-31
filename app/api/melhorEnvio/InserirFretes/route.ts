@@ -105,6 +105,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({ from, to, volumes, service: serviceId, options })
     });
     const cartData = await cartResp.json();
+    const cartItemId = cartData.id 
     if (!cartResp.ok) {
       console.error("Erro /me/cart:", cartData);
       return NextResponse.json({ error: cartData.error || cartData.message }, { status: 500 });
@@ -149,15 +150,22 @@ export async function POST(req: Request) {
 
     // 10) salva o orderId no banco para uso posterior
     if (pedidoId) {
-      await prisma.shipment.create({
-        data: {
-          pedidoId: BigInt(pedidoId),
-          melhorEnvioOrderId: orderId,
-          etiquetaUrl: "",
-          status: "prepared"
-        }
-      });
-    }
+  // primeiro atualiza o Pedido com o cartItemId
+    await prisma.pedido.update({
+      where: { pedidoId: BigInt(pedidoId) },
+      data: { cartItemId: orderId },
+    });
+
+  // depois cria o Shipment (como você já faz)
+  await prisma.shipment.create({
+    data: {
+      pedidoId:           BigInt(pedidoId),
+      melhorEnvioOrderId: orderId,
+      etiquetaUrl:        "",
+      status:             "prepared",
+    },
+  });
+}
 
     // 11) retorna dados ao front
     return NextResponse.json({ cart: cartData, products: prodData, orderId });

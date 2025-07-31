@@ -62,66 +62,96 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  const meta = session.metadata!;
-  const pedidoId = BigInt(meta.pedidoId!);
-  const userId   = meta.userId ? BigInt(meta.userId) : null;
-  const quoteId  = meta.shippingOptionId!; // string
+  const meta     = session.metadata!
+  const pedidoId = BigInt(meta.pedidoId!)
+  const userId   = meta.userId ? BigInt(meta.userId) : null
+  const BASE     = process.env.API_URL! // ex: https://meuapp.com
+
+  console.log("WEBHOOK RECEBIDO:", session.id, session.metadata)
 
   if (!userId) {
-    console.log("Pedido sem usuário autenticado, pulando geração de etiqueta");
-    return;
+    console.log("Pedido sem usuário, abortando etiqueta.")
+    return
   }
 
-  // 1) Atualiza status do pedido
+  // 1) Marca pagamento confirmado
   await prisma.pedido.update({
     where: { pedidoId },
     data: {
       statusPedido: "pagamento_confirmado",
       updatedAt:    new Date(),
     },
-  });
-  console.log(`Pedido ${pedidoId} marcado como pago.`);
+  })
+  console.log(`Pedido ${pedidoId} marcado como pago.`)
 
-  // 2) Gera etiqueta no Melhor Envio
-  try {
-    const resp = await fetch(
-      "https://sandbox.melhorenvio.com.br/api/v2/me/shipment/generate",
-      {
-        method: "POST",
-        headers: {
-          "Accept":        "application/json",
-          "Content-Type":  "application/json",
-          "Authorization": `Bearer ${process.env.MELHOR_ENVIO_TOKEN}`,
-          "User-Agent":    "PavitoVelas (suporte@pavito.com)",
-        },
-        body: JSON.stringify({ orders: [quoteId] }),
-      }
-    );
-
-    const data = await resp.json();
-    if (!resp.ok) {
-      console.error("❌ Erro MelhorEnvio:", data);
-      return;
-    }
-
-    // 3) Persiste o Shipment no banco
-    const ship = data.shipments[0];
-    await prisma.shipment.create({
-      data: {
-        pedidoId,
-        melhorEnvioQuoteId: parseInt(quoteId, 10),
-        melhorEnvioOrderId: ship.id,
-        etiquetaUrl:        ship.label_url,
-        status:             ship.status,
-      },
-    });
-
-    console.log(
-      `Etiqueta gerada e salva para pedido ${pedidoId}: shipmentId=${ship.id}`
-    );
-  } catch (err) {
-    console.error("❌ Falha ao gerar etiqueta:", err);
+  // 2) Busca o cartItemId salvo no Pedido
+  const pedidoRecord = await prisma.pedido.findUnique({
+    where:  { pedidoId },
+    select: { cartItemId: true },
+  })
+  if (!pedidoRecord?.cartItemId) {
+    console.error("❌ Pedido sem cartItemId no banco")
+    return
   }
+  const orders = [pedidoRecord.cartItemId]
+  console.log("→ Usando orders:", orders)
+
+  // 3) Chama rota interna de compra de frete
+  let coJson: any
+  try {
+    const co = await fetch(`${BASE}/api/melhorEnvio/compraEtiquetas`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ pedidoId: pedidoId.toString(), orders }),
+    })
+    const coText = await co.text()
+    try {
+      coJson = JSON.parse(coText)
+    } catch {
+      console.error("❌ /checkout não retornou JSON:", co.status, coText)
+      return
+    }
+    if (!co.ok) {
+      console.error("❌ Erro no checkout interno:", co.status, coJson)
+      return
+    }
+  } catch (err) {
+    console.error("❌ Falha ao chamar /api/melhorEnvio/checkout:", err)
+    return
+  }
+
+  const shipments: Array<{ id: string }> = coJson.shipments
+  console.log("✓ Fretes comprados:", shipments)
+
+  // 4) Chama rota interna de geração de etiqueta
+  try {
+    const gen = await fetch(`${BASE}/api/melhorEnvio/gerarEtiquetas`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        pedidoId:  pedidoId.toString(),
+        shipments: shipments.map(s => s.id),
+      }),
+    })
+    const genText = await gen.text()
+    let genJson: any
+    try {
+      genJson = JSON.parse(genText)
+    } catch {
+      console.error("❌ /generate não retornou JSON:", gen.status, genText)
+      return
+    }
+    if (!gen.ok) {
+      console.error("❌ Erro na geração interna:", gen.status, genJson)
+      return
+    }
+    console.log("✓ Etiquetas geradas:", genJson.shipments)
+  } catch (err) {
+    console.error("❌ Falha ao chamar /api/melhorEnvio/generate:", err)
+    return
+  }
+
+  console.log(`✅ Frete e etiquetas processados para pedido ${pedidoId}`)
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {

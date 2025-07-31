@@ -68,7 +68,7 @@ model Pedido {
   pagamentos      Pagamento[]
   usuario         Usuario          @relation(fields: [usuarioId], references: [usuarioId])
 
-  
+  cartItemId      String?          @map("cart_item_id")
   shipments       Shipment[]       // ponta inversa para o model Shipment
 }
 
