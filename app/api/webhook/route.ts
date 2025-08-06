@@ -5,6 +5,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import type Stripe from "stripe"
+import { sendPaymentConfirmed, sendPaymentPending } from "../services/emailService"
+import { NextApiResponse } from "next"
  
 // Desativar o bodyParser para webhooks do Stripe
 export const config = {
@@ -66,6 +68,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   const pedidoId = BigInt(meta.pedidoId!)
   const userId   = meta.userId ? BigInt(meta.userId) : null
   const BASE     = process.env.API_URL! // ex: https://meuapp.com
+  
 
   console.log("WEBHOOK RECEBIDO:", session.id, session.metadata)
 
@@ -73,6 +76,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     console.log("Pedido sem usuário, abortando etiqueta.")
     return
   }
+
+  //Buscar o email do usuário no banco 
+  const usuario = await prisma.usuario.findUnique({
+    where: {usuarioId: userId} 
+  })
+
+  if (!usuario || !usuario.email){
+    console.log('Usuário não encontrado ou sem e-mail')
+    return 
+  }
+
+  const email = usuario.email
 
   // 1) Marca pagamento confirmado
   await prisma.pedido.update({
@@ -83,6 +98,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     },
   })
   console.log(`Pedido ${pedidoId} marcado como pago.`)
+  await sendPaymentConfirmed(email, pedidoId)
 
   // 2) Busca o cartItemId salvo no Pedido
   const pedidoRecord = await prisma.pedido.findUnique({
