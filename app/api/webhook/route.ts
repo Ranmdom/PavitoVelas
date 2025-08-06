@@ -98,7 +98,13 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     },
   })
   console.log(`Pedido ${pedidoId} marcado como pago.`)
-  await sendPaymentConfirmed(email, pedidoId)
+
+  const pedido = await prisma.pedido.findUnique({
+    where: {pedidoId},
+    include: { itensPedido: {include: {produto: true}}}
+  })
+  const nomes: string[] = pedido?.itensPedido.map(i => i.produto.nome) || []
+  await sendPaymentConfirmed(email, nomes)
 
   // 2) Busca o cartItemId salvo no Pedido
   const pedidoRecord = await prisma.pedido.findUnique({

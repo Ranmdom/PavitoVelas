@@ -51,9 +51,9 @@ export async function sendMail({to, subject, html, text}: EmailOptions) {
 
 /*E-mail de confirmação de pagamento*/
 
-export async function sendPaymentConfirmed(to: string, pedidoId: BigInt) {
+export async function sendPaymentConfirmed(to: string, produtos: string[]) {
     const subject = 'Pagamento Confirmado ✔️'
-    const html = `<p>Olá! Seu pedido <strong>${pedidoId.toString()}</strong> foi confirmado com sucesso.</p>
+    const html = `<p>Olá! Seu pedido <strong>${produtos.join(', ')}</strong> foi confirmado com sucesso.</p>
     <p>Em breve começaremos o processamento.</p>`;
 
     return sendMail({to, subject, html})
