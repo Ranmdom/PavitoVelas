@@ -1,54 +1,80 @@
 // app/api/melhorEnvio/compraEtiquetas/route.ts
-import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { fetchTrackingForOrders } from "@/lib/melhorEnvio";
 
-const MELHOR_BASE = "https://sandbox.melhorenvio.com.br/api/v2"
-const TOKEN       = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!
+const MELHOR_BASE = "https://sandbox.melhorenvio.com.br/api/v2";
+const TOKEN = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;
 
 export async function POST(req: NextRequest) {
-  const { pedidoId, orders }: { pedidoId: string; orders: string[] } = await req.json()
-  const pedidoIdBigInt = BigInt(pedidoId)
+  const { pedidoId, orders }: { pedidoId: string; orders: string[] } = await req.json();
+  const pedidoIdBigInt = BigInt(pedidoId);
 
-  // 1⃣ chama o sandbox do MelhorEnvío
+  // 1) Checkout (compra)
   const resp = await fetch(`${MELHOR_BASE}/me/shipment/checkout`, {
-    method:  "POST",
+    method: "POST",
     headers: {
-      Accept:        "application/json",
-      "Content-Type":"application/json",
+      Accept: "application/json",
+      "Content-Type": "application/json",
       Authorization: `Bearer ${TOKEN}`,
-      "User-Agent":  "PavitoVelas (suporte@pavito.com)",
+      "User-Agent": "PavitoVelas (suporte@pavito.com)",
     },
     body: JSON.stringify({ orders }),
-  })
+  });
 
- // 2) parse do JSON já testado anteriormente
-  const data: any = await resp.json()
-
-  const ordersResp = data.purchase?.orders
+  const data: any = await resp.json();
+  const ordersResp = data?.purchase?.orders; // geralmente [{ id, ... }, ...]
   if (!resp.ok || !Array.isArray(ordersResp)) {
-    return NextResponse.json({ error: data }, { status: resp.status })
+    console.error("❌ Checkout erro:", resp.status, data);
+    return NextResponse.json({ error: data }, { status: resp.status });
   }
 
-  // usa upsert para criar ou atualizar
+  const orderIds: string[] = ordersResp.map((o: any) => o.id);
+  console.log("🧾 ME checkout => orderIds:", orderIds);
+
+  // 2) Upsert dos Shipments (amarrando pedidoId + melhorEnvioOrderId)
   const createdOrUpdated = await Promise.all(
-    ordersResp.map((o: any) =>
+    orderIds.map((id) =>
       prisma.shipment.upsert({
-        where: { melhorEnvioOrderId: o.id },
+        where: { melhorEnvioOrderId: id },
         update: {
-          status: data.purchase.status,
+          status: data?.purchase?.status ?? "paid",
           updatedAt: new Date(),
         },
         create: {
-          pedidoId:           pedidoIdBigInt,
-          melhorEnvioOrderId: o.id,
-          status:             data.purchase.status,
-          etiquetaUrl:        "", // placeholder
+          pedidoId: pedidoIdBigInt,
+          melhorEnvioOrderId: id,
+          status: data?.purchase?.status ?? "paid",
+          etiquetaUrl: "",
         },
       })
     )
-  )
+  );
 
-  // 3) enriquecer com dados da ordem (transportadora e, se já tiver, tracking)
+  // 3) (opcional) Tentativa inicial de descobrir transportadora/tracking
+  //    Dica: tracking costuma vir só depois do /generate ou via webhook.
+  try {
+    const trackingArr = await fetchTrackingForOrders(orderIds);
+    console.log("🔎 /shipment/tracking (compra):", trackingArr);
+
+    await Promise.all(
+      trackingArr.map((t: any) =>
+        prisma.shipment.update({
+          where: { melhorEnvioOrderId: t.id },
+          data: {
+            trackingCode:    t?.tracking ?? undefined,
+            trackingUrl:     t?.tracking_url ?? undefined,
+            trackingCarrier: t?.service?.company?.name ?? t?.company?.name ?? undefined,
+            updatedAt:       new Date(),
+          },
+        })
+      )
+    );
+  } catch (e) {
+    console.warn("📭 Tracking ainda não disponível na COMPRA (normal):", e);
+  }
+
+  // 4) (opcional) GET /me/orders/{id} só pra preencher carrier se faltou
   await Promise.all(
     createdOrUpdated.map(async (s) => {
       const r = await fetch(`${MELHOR_BASE}/me/orders/${s.melhorEnvioOrderId}`, {
@@ -59,28 +85,17 @@ export async function POST(req: NextRequest) {
         },
         cache: "no-store",
       });
-
       if (!r.ok) return;
       const order = await r.json();
-
-      const trackingCode = order?.tracking ?? null;
-      const trackingUrl  = order?.tracking_url ?? null;
-      const carrierName  = order?.service?.company?.name ?? order?.company?.name ?? null;
-
-      await prisma.shipment.update({
-        where: { melhorEnvioOrderId: s.melhorEnvioOrderId },
-        data: {
-          trackingCarrier: carrierName ?? undefined,
-          trackingCode:    trackingCode ?? undefined,   // pode ainda não existir
-          trackingUrl:     trackingUrl ?? undefined,
-        },
-      });
+      const carrierName = order?.service?.company?.name ?? order?.company?.name ?? null;
+      if (carrierName) {
+        await prisma.shipment.update({
+          where: { melhorEnvioOrderId: s.melhorEnvioOrderId },
+          data: { trackingCarrier: carrierName, updatedAt: new Date() },
+        });
+      }
     })
   );
 
-
-  // retorna a lista de ids
-  return NextResponse.json({
-    shipments: createdOrUpdated.map(s => ({ id: s.melhorEnvioOrderId })),
-  })
+  return NextResponse.json({ shipments: orderIds.map((id) => ({ id })) });
 }
