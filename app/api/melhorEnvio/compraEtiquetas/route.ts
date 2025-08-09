@@ -48,6 +48,37 @@ export async function POST(req: NextRequest) {
     )
   )
 
+  // 3) enriquecer com dados da ordem (transportadora e, se já tiver, tracking)
+  await Promise.all(
+    createdOrUpdated.map(async (s) => {
+      const r = await fetch(`${MELHOR_BASE}/me/orders/${s.melhorEnvioOrderId}`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${TOKEN}`,
+          "User-Agent": "PavitoVelas (suporte@pavito.com)",
+        },
+        cache: "no-store",
+      });
+
+      if (!r.ok) return;
+      const order = await r.json();
+
+      const trackingCode = order?.tracking ?? null;
+      const trackingUrl  = order?.tracking_url ?? null;
+      const carrierName  = order?.service?.company?.name ?? order?.company?.name ?? null;
+
+      await prisma.shipment.update({
+        where: { melhorEnvioOrderId: s.melhorEnvioOrderId },
+        data: {
+          trackingCarrier: carrierName ?? undefined,
+          trackingCode:    trackingCode ?? undefined,   // pode ainda não existir
+          trackingUrl:     trackingUrl ?? undefined,
+        },
+      });
+    })
+  );
+
+
   // retorna a lista de ids
   return NextResponse.json({
     shipments: createdOrUpdated.map(s => ({ id: s.melhorEnvioOrderId })),
