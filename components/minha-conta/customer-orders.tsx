@@ -46,7 +46,15 @@ import { useSession } from "next-auth/react";
 
 
 // Tipos
-type OrderStatus = "pendente" | "pago" | "enviado" | "entregue" | "cancelado"
+type OrderStatus =
+  | "pendente"
+  | "pago"
+  | "enviado"
+  | "a_caminho"
+  | "pagamento_confirmado"
+  | "entregue"
+  | "cancelado";
+
 
 interface OrderItem {
   itemPedidoId: number
@@ -92,6 +100,10 @@ export default function CustomerOrders() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
   
   const ordersPerPage = 5
+
+  const [tracking, setTracking] = useState<{ trackingCarrier?: string|null; trackingCode?: string|null } | null>(null);
+  const [isTrackingLoading, setIsTrackingLoading] = useState(false);
+
 
   // Buscar pedidos
   useEffect(() => {
@@ -170,20 +182,38 @@ export default function CustomerOrders() {
   }
 
   // Visualizar detalhes do pedido
-  const handleViewDetails = async (order: Order) => {
-    setIsLoading(true)
+    const handleViewDetails = async (order: Order) => {
+    setIsLoading(true);
+    setTracking(null);
+    setIsTrackingLoading(true);
+
     try {
-      const res = await fetch(`/api/pedidos/${order.pedidoId}`)
-      if (!res.ok) throw new Error("Erro ao buscar detalhes")
-      const data: any = await res.json()
-      setSelectedOrder(data)
-      setIsDetailsOpen(true)
+      const res = await fetch(`/api/pedidos/${order.pedidoId}`);
+      if (!res.ok) throw new Error("Erro ao buscar detalhes");
+      const data: any = await res.json();
+      setSelectedOrder(data);
+      setIsDetailsOpen(true);
     } catch (err) {
-      toast({ title: "Não foi possível carregar o pedido." })
+      toast({ title: "Não foi possível carregar o pedido." });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+
+    // busca do rastreio (independente do sucesso dos detalhes)
+    try {
+      const rt = await fetch(`/api/melhorEnvio/rastreio?pedidoId=${order.pedidoId}`, { cache: "no-store" });
+      if (rt.ok) {
+        setTracking(await rt.json());
+      } else {
+        setTracking(null);
+      }
+    } catch {
+      setTracking(null);
+    } finally {
+      setIsTrackingLoading(false);
+    }
+  };
+
 
   // Formatar status do pedido
   const formatStatus = (status: OrderStatus) => {
@@ -448,6 +478,46 @@ export default function CustomerOrders() {
                   <div className="font-medium">
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedOrder.valorTotal)}
                   </div>
+                </div>
+                {/* RASTREAMENTO */}
+                <div className="col-span-2">
+                  <h4 className="font-medium text-[#631C21] mb-1">Rastreamento</h4>
+
+                  {isTrackingLoading ? (
+                    <div className="flex items-center gap-2 text-[#631C21]/70">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Carregando informações de rastreio…
+                    </div>
+                  ) : !tracking?.trackingCarrier && !tracking?.trackingCode ? (
+                    <p className="text-sm text-[#631C21]/70">
+                      Ainda não há informações de rastreio disponíveis.
+                    </p>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <div>
+                        <b>Transportadora:</b> {tracking?.trackingCarrier ?? "-"}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span><b>Código:</b> {tracking?.trackingCode ?? "-"}</span>
+                        {tracking?.trackingCode && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="border-[#F4847B]/30"
+                            onClick={async () => {
+                              await navigator.clipboard.writeText(tracking.trackingCode!);
+                              toast({ title: "Código copiado!", description: "Cole no site da transportadora." });
+                            }}
+                          >
+                            Copiar código
+                          </Button>
+                        )}
+                      </div>
+                      <small className="text-[#631C21]/70">
+                        Copie o código e cole no site da transportadora para acompanhar.
+                      </small>
+                    </div>
+                  )}
                 </div>
               </div>
               

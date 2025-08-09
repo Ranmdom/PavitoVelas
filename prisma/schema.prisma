@@ -138,6 +138,9 @@ model Shipment {
   status               String   @default("created")
   createdAt            DateTime @default(now())        @map("created_at")
   updatedAt            DateTime @updatedAt             @map("updated_at")
+  trackingCode       String?  @map("tracking_code")
+  trackingCarrier    String?  @map("tracking_carrier")
+  trackingUrl        String?  @map("tracking_url")
 
   pedido               Pedido   @relation(fields: [pedidoId], references: [pedidoId])
 

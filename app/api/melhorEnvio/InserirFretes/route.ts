@@ -15,6 +15,7 @@ const STORE_ADDRESS = process.env.STORE_ADDRESS!;
 const STORE_CITY = process.env.STORE_CITY!;
 const STORE_STATE = process.env.STORE_STATE!;
 const STORE_DOCUMENT = process.env.STORE_DOCUMENT!;
+const STORE_PHONE = process.env.STORE_PHONE!;
 
 export async function POST(req: Request) {
   try {
@@ -41,16 +42,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Endereço não encontrado" }, { status: 400 });
     }
 
-    // 4) busca usuário (nome + CPF)
+    // 4) busca usuário (nome + CPF + celular)
     const usuario = await prisma.usuario.findUnique({
       where: { usuarioId: userId },
-      select: { nome: true, sobrenome: true, cpf: true }
+      select: { nome: true, sobrenome: true, cpf: true, celular: true }
     });
     if (!usuario?.cpf) {
       return NextResponse.json({ error: "CPF do usuário não cadastrado" }, { status: 400 });
     }
+    if(!usuario?.celular){
+      return NextResponse.json({ error: "Celular do usuário não cadastrado"}, {status: 400})
+    }
     const fullName = `${usuario.nome} ${usuario.sobrenome}`;
     const cpf = usuario.cpf.replace(/\D/g, "");
+    const phone = usuario.celular
+      .replace(/\D/g, '')                   // remove tudo que não é dígito
+      .replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
 
     // 5) busca dimensões e monta volumes
     const produtoRecords = await prisma.produto.findMany({
@@ -81,6 +88,7 @@ export async function POST(req: Request) {
       city: STORE_CITY,
       state: STORE_STATE,
       postal_code: process.env.FROM_POSTAL_CODE!,
+      phone: STORE_PHONE,
       country: "BR"
     };
     const to = {
@@ -90,6 +98,7 @@ export async function POST(req: Request) {
       city: endereco.cidade,
       state: endereco.estado,
       postal_code: toPostal,
+      phone: phone,
       country: "BR"
     };
 
