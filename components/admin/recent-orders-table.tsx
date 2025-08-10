@@ -59,7 +59,7 @@ export default function RecentOrdersTable() {
     const buscarPedidos = async () => {
       try {
         setCarregando(true)
-        const resposta = await fetch("/api/pedidos")
+        const resposta = await fetch("/api/admin/pedidos")
 
         if (!resposta.ok) {
           throw new Error("Erro ao buscar pedidos")
@@ -85,7 +85,7 @@ export default function RecentOrdersTable() {
   // Atualizar a lista de pedidos após uma atualização de status
   const atualizarListaPedidos = async () => {
     try {
-      const resposta = await fetch("/api/pedidos")
+      const resposta = await fetch("/api/admin/pedidos")
 
       if (!resposta.ok) {
         throw new Error("Erro ao buscar pedidos")

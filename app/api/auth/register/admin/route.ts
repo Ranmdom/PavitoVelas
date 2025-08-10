@@ -1,3 +1,4 @@
+// app/api/auth/register/admin/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcrypt"

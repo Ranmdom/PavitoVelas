@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-// GET /api/pedidos - Listar todos os pedidos
+// GET /api/admin/pedidos - Listar todos os pedidos
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)

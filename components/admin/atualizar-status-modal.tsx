@@ -30,7 +30,7 @@ export function AtualizarStatusModal({ pedidoId, aberto, aoFechar, aoAtualizar }
         try {
           setCarregando(true)
 
-          const resposta = await fetch(`/api/pedidos/${pedidoId}`)
+          const resposta = await fetch(`/api/admin/pedidos/${pedidoId}`)
 
           if (!resposta.ok) {
             throw new Error("Erro ao buscar detalhes do pedido")
@@ -65,7 +65,7 @@ export function AtualizarStatusModal({ pedidoId, aberto, aoFechar, aoAtualizar }
     try {
       setAtualizando(true)
 
-      const resposta = await fetch(`/api/pedidos/${pedidoId}`, {
+      const resposta = await fetch(`/api/admin/pedidos/${pedidoId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

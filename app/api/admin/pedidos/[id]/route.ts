@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-// GET /api/pedidos/[id] - Obter detalhes de um pedido específico
+// GET /api/admin/pedidos/[id] - Obter detalhes de um pedido específico
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions)
@@ -89,7 +89,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-// PATCH /api/pedidos/[id] - Atualizar o status de um pedido
+// PATCH /api/admin/pedidos/[id] - Atualizar o status de um pedido
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions)

@@ -5,7 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const prisma = new PrismaClient()
 
-// GET /api/pedidos/[id] - Listar todos os pedidos de um usuário
+// GET /api/admin/pedidos/[id] - Listar todos os pedidos de um usuário
 export async function GET(
   request: Request,
   context: { params: { id: string } }

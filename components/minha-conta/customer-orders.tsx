@@ -195,7 +195,7 @@ export default function CustomerOrders() {
     setIsTrackingLoading(true);
 
     try {
-      const res = await fetch(`/api/pedidos/${order.pedidoId}`);
+      const res = await fetch(`/api/admin/pedidos/${order.pedidoId}`);
       if (!res.ok) throw new Error("Erro ao buscar detalhes");
       const data: any = await res.json();
       setSelectedOrder(data);

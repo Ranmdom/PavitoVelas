@@ -26,7 +26,7 @@ export function DetalhePedidoModal({ pedidoId, aberto, aoFechar }: DetalhePedido
           setCarregando(true)
           setErro(null)
 
-          const resposta = await fetch(`/api/pedidos/${pedidoId}`)
+          const resposta = await fetch(`/api/admin/pedidos/${pedidoId}`)
 
           if (!resposta.ok) {
             throw new Error("Erro ao buscar detalhes do pedido")
