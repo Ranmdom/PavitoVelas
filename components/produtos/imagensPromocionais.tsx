@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 
 export default function ImagemPromocional() {
     // Simulando o array de imagens que viria da API
-    const [imagens, setImagens] = useState<string[]>(["templates/vela-1.jpeg?height=400&width=400"])
+    const [imagens, setImagens] = useState<string[]>(["/templates/vela-1.jpeg"])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [frontImage, setFrontImage] = useState(imagens[0])
     const [backImage, setBackImage] = useState(imagens[0])
@@ -18,6 +18,7 @@ export default function ImagemPromocional() {
                 if (res.ok) {
                     const data = await res.json()
                     if (data && Array.isArray(data)) {
+                        console.log("Imagens recebidas:", data)
                         // Quando a API estiver funcionando, você pode usar:
                         setImagens(data);
                     }

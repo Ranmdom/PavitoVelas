@@ -14,7 +14,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'zgtqpisusyupfcegrcnh.supabase.co', pathname: '/storage/v1/object/public/**' }
+    ]
   },
   experimental: {
     webpackBuildWorker: true,
