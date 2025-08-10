@@ -14,20 +14,22 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     // Buscar o pedido com todos os detalhes
     const pedido = await prisma.pedido.findUnique({
-      where: {
-        pedidoId: BigInt(params.id),
-        deletedAt: null,
-      },
+      where: { pedidoId: BigInt(params.id), deletedAt: null },
       include: {
         usuario: true,
-        itensPedido: {
-          include: {
-            produto: true,
+        itensPedido: { include: { produto: true } },
+        EnderecoPedido: true,
+        shipments: {
+          select: {
+            melhorEnvioOrderId: true,
+            trackingCarrier: true,
+            trackingCode: true,
+            trackingUrl: true,
+            status: true,
           },
         },
-        EnderecoPedido: true, 
       },
-    })
+    });
 
     if (!pedido) {
       return NextResponse.json({ error: "Pedido não encontrado" }, { status: 404 })
@@ -41,6 +43,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     // Buscar o endereço principal do usuário
     const enderecoPedido = pedido.EnderecoPedido[0] ?? null;
+
+
 
     // Formatar o pedido para a resposta
     const pedidoFormatado = {
@@ -123,6 +127,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         updatedAt: new Date(),
       },
     })
+
+
 
     return NextResponse.json({
       pedidoId: pedidoAtualizado.pedidoId.toString(),

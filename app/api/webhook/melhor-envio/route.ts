@@ -5,7 +5,7 @@ import {
   getOrder,
   verifyMESignature,
   fetchTrackingForOrders,
-  extractTracking,          // << importa o parser
+  extractTracking,
 } from "@/lib/melhorEnvio";
 
 export const runtime = "nodejs";
@@ -23,89 +23,112 @@ export async function POST(req: NextRequest) {
   const sig = req.headers.get("x-me-signature");
   const raw = await req.arrayBuffer();
 
-  if (!(await verifyMESignature(raw, sig))) {
-    console.warn("❌ Assinatura inválida do Melhor Envio");
+  // 0) log básico (sempre)
+  console.log("ME ▶︎ headers:", Object.fromEntries(req.headers));
+  console.log("ME ▶︎ raw length:", raw.byteLength);
+
+  // 1) assinatura
+  const ok = await verifyMESignature(raw, sig);
+  if (!ok) {
+    console.error("❌ assinatura inválida");
     return new NextResponse("invalid signature", { status: 401 });
   }
 
-  const { event, data } = JSON.parse(Buffer.from(raw).toString("utf8")) as {
+  let payload: any;
+  try {
+    payload = JSON.parse(Buffer.from(raw).toString("utf8"));
+  } catch (e) {
+    console.error("❌ payload inválido:", e);
+    return new NextResponse("bad payload", { status: 400 });
+  }
+
+  const { event, data } = payload as {
     event: string;
     data: { id: string; tracking?: string; tracking_url?: string };
   };
 
+  console.log("ME ▶︎ evento recebido:", event, "orderId:", data?.id, "payloadTracking:", data?.tracking);
+
   if (!INTERESSA.has(event)) {
-    console.log("ℹ️ ME WEBHOOK ignorado:", event, data?.id);
+    console.log("ME ▶︎ ignorando evento:", event);
     return NextResponse.json({ ok: true });
   }
 
-  console.log("📦 ME WEBHOOK:", { event, orderId: data.id, payloadTracking: data.tracking });
+  const orderId = data.id;
 
   try {
-    // 1) Busca completa da ordem
-    const order = await getOrder(data.id);
-
-    // 2) Extrai tracking do /me/orders e mistura com payload (se vier)
-    let { code, url, carrier } = extractTracking(order);
-    if (!code && (data?.tracking || data?.tracking_url)) {
-      code = data.tracking ?? code;
-      url  = data.tracking_url ?? url;
-    }
-
-    console.log("🔍 ME /orders retorno:", {
-      status: order?.status,
-      code, url, carrier,
+    // 2) checa se existe shipment
+    const existing = await prisma.shipment.findUnique({
+      where: { melhorEnvioOrderId: orderId },
+      select: { pedidoId: true, trackingCode: true, trackingCarrier: true, trackingUrl: true, status: true },
     });
 
-    // 3) Fallback: /me/shipment/tracking (caso ainda não tenha código)
+    if (!existing) {
+      console.error("⚠️ shipment NÃO encontrado p/ orderId:", orderId, "— verifique sua rota /compraEtiquetas salvando antes do webhook");
+      return NextResponse.json({ ok: true });
+    }
+    console.log("ME ▶︎ shipment atual:", existing);
+
+    // 3) /me/orders/:id
+    const order = await getOrder(orderId);
+    let { code, url, carrier } = extractTracking(order);
+    // mistura com o payload (se veio algo)
+    code = data?.tracking ?? code;
+    url  = data?.tracking_url ?? url;
+
+    console.log("ME ▶︎ /orders extract:", { code, url, carrier, status: order?.status });
+
+    // 4) fallback /shipment/tracking
     if (!code) {
       try {
-        const arr = await fetchTrackingForOrders(data.id);
-        const item = Array.isArray(arr) ? arr.find((x: any) => x?.id === data.id) ?? arr[0] : null;
+        const arr = await fetchTrackingForOrders(orderId);
+        const item = Array.isArray(arr) ? arr.find((x: any) => x?.id === orderId) ?? arr[0] : null;
         const t = extractTracking(item);
-        code    = t.code    ?? code;
-        url     = t.url     ?? url;
-        carrier = t.carrier ?? carrier;
-        if (t.code) console.log("🧲 Tracking via /shipment/tracking:", t.code);
-        else console.log("⏳ Ainda sem tracking via /shipment/tracking");
+        if (t.code) {
+          code    = t.code;
+          url     = t.url     ?? url;
+          carrier = t.carrier ?? carrier;
+          console.log("ME ▶︎ tracking via /shipment/tracking:", t);
+        } else {
+          console.log("ME ▶︎ tracking ainda indisponível no /shipment/tracking");
+        }
       } catch (e) {
-        console.warn("⚠️ Fallback /shipment/tracking falhou:", e);
+        console.warn("ME ▶︎ fallback tracking falhou:", e);
       }
     }
 
-    // 4) Garante que existe o shipment (criado na compra)
-    const existing = await prisma.shipment.findUnique({
-      where: { melhorEnvioOrderId: data.id },
-      select: { pedidoId: true },
-    });
-    if (!existing) {
-      console.warn("⚠️ Nenhum shipment encontrado para", data.id, "- crie na compra das etiquetas.");
-      return NextResponse.json({ ok: true });
-    }
+    // 5) sobrescrita segura
+    const next = {
+      trackingCode:    code    ?? existing.trackingCode    ?? undefined,
+      trackingCarrier: carrier ?? existing.trackingCarrier ?? undefined,
+      trackingUrl:     url     ?? existing.trackingUrl     ?? undefined,
+      status:          event,
+    };
+    console.log("ME ▶︎ salvando:", next);
 
-    // 5) Upsert sem sobrescrever com null
     const saved = await prisma.shipment.upsert({
-      where: { melhorEnvioOrderId: data.id },
+      where: { melhorEnvioOrderId: orderId },
       create: {
         pedidoId: existing.pedidoId,
-        melhorEnvioOrderId: data.id,
-        status: event,
-        trackingCode:    code    ?? undefined,
-        trackingCarrier: carrier ?? undefined,
-        trackingUrl:     url     ?? undefined,
+        melhorEnvioOrderId: orderId,
         etiquetaUrl: "",
+        ...next,
       },
-      update: {
-        status: event,
-        trackingCode:    code    ?? undefined,
-        trackingCarrier: carrier ?? undefined,
-        trackingUrl:     url     ?? undefined,
-      },
+      update: next,
     });
 
-    console.log("✅ Tracking salvo/atualizado:", saved.trackingCode);
+    console.log("ME ▶︎ salvo:", {
+      orderId,
+      trackingCode: saved.trackingCode,
+      trackingCarrier: saved.trackingCarrier,
+      trackingUrl: saved.trackingUrl,
+      status: saved.status,
+      updatedAt: saved.updatedAt,
+    });
+
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error("❌ Erro webhook ME:", e);
+    console.error("❌ erro no webhook ME:", e);
     return new NextResponse("error", { status: 500 });
   }
 }

@@ -30,6 +30,7 @@ export async function verifyMESignature(raw: ArrayBuffer, headerSig?: string | n
 // /lib/melhorEnvio.ts
 export async function fetchTrackingForOrders(orderIds: string[] | string) {
   const orders = Array.isArray(orderIds) ? orderIds : [orderIds];
+
   const res = await fetch("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/tracking", {
     method: "POST",
     headers: {
@@ -43,44 +44,46 @@ export async function fetchTrackingForOrders(orderIds: string[] | string) {
   });
 
   const text = await res.text();
-  console.log("RAW /shipment/tracking:", res.status, text); // <— veja nos logs
-
+  console.log("RAW /shipment/tracking:", res.status, text);
   if (!res.ok) throw new Error(`tracking fetch error (${res.status})`);
 
   let json: any; try { json = JSON.parse(text); } catch { json = text; }
 
-  // normaliza para array
-  const arr =
-    Array.isArray(json) ? json
-    : Array.isArray(json?.data) ? json.data
-    : Array.isArray(json?.orders) ? json.orders
-    : [];
-
+  // ✅ normalização robusta (array OU objeto-mapa por id)
+  let arr: any[] = [];
+  if (Array.isArray(json)) {
+    arr = json;
+  } else if (json && typeof json === "object") {
+    const candidate = json.data ?? json.orders ?? json;
+    if (Array.isArray(candidate)) {
+      arr = candidate;
+    } else if (candidate && typeof candidate === "object") {
+      arr = Object.values(candidate); // <-- trata o shape do seu log
+    }
+  }
   return arr;
 }
 
+// mantenha seu extractTracking como está
 export function extractTracking(obj: any) {
   if (!obj || typeof obj !== "object") return { code: undefined, url: undefined, carrier: undefined };
-
   const code =
     obj.tracking_code ??
     obj.tracking ??
     obj?.tracking?.code ??
-    obj?.events?.tracking_code ?? // já vi isso em algumas integrações
+    obj?.events?.tracking_code ??
     undefined;
-
   const url =
     obj.tracking_url ??
     obj?.tracking?.url ??
     obj?.url_tracking ??
     undefined;
-
   const carrier =
     obj?.service?.company?.name ??
     obj?.company?.name ??
     obj?.carrier?.name ??
     undefined;
-
   return { code, url, carrier };
 }
+
 

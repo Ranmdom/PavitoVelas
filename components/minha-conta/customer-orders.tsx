@@ -55,6 +55,12 @@ type OrderStatus =
   | "entregue"
   | "cancelado";
 
+type TrackingInfo = {
+  trackingCarrier?: string | null
+  trackingCode?: string | null
+  trackingUrl?: string | null
+}
+
 
 interface OrderItem {
   itemPedidoId: number
@@ -101,8 +107,9 @@ export default function CustomerOrders() {
   
   const ordersPerPage = 5
 
-  const [tracking, setTracking] = useState<{ trackingCarrier?: string|null; trackingCode?: string|null } | null>(null);
+  const [tracking, setTracking] = useState<TrackingInfo | null>(null)
   const [isTrackingLoading, setIsTrackingLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false); 
 
 
   // Buscar pedidos
@@ -201,18 +208,43 @@ export default function CustomerOrders() {
 
     // busca do rastreio (independente do sucesso dos detalhes)
     try {
-      const rt = await fetch(`/api/melhorEnvio/rastreio?pedidoId=${order.pedidoId}`, { cache: "no-store" });
-      if (rt.ok) {
-        setTracking(await rt.json());
-      } else {
-        setTracking(null);
-      }
+      const rt = await fetch(`/api/melhorEnvio/rastreio?pedidoId=${order.pedidoId}`, { cache: "no-store" })
+        if (rt.ok) {
+          const data: TrackingInfo = await rt.json()
+          setTracking(data)
+        } else {
+          setTracking(null)
+        }
     } catch {
       setTracking(null);
     } finally {
       setIsTrackingLoading(false);
     }
   };
+
+  async function handleRefreshTracking(pedidoId: number) {
+    try {
+      setIsSyncing(true);
+      // força sincronização no backend
+      await fetch("/api/melhorEnvio/resyncPendentes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pedidoId }),
+        cache: "no-store",
+      });
+
+      // re-busca tracking para esse pedido
+      const rt = await fetch(`/api/melhorEnvio/rastreio?pedidoId=${pedidoId}`, { cache: "no-store" });
+      const data = rt.ok ? await rt.json() : null;
+      setTracking(data);
+      toast({ title: "Rastreio atualizado", description: "Código de rastreio atualizado com sucesso." });
+    } catch (e: any) {
+      toast({ title: "Não foi possível atualizar agora", description: e.message, variant: "destructive" });
+    } finally {
+      setIsSyncing(false);
+    }
+  }
+
 
 
   // Formatar status do pedido
@@ -481,7 +513,25 @@ export default function CustomerOrders() {
                 </div>
                 {/* RASTREAMENTO */}
                 <div className="col-span-2">
-                  <h4 className="font-medium text-[#631C21] mb-1">Rastreamento</h4>
+                  <div className="mb-1 flex items-center justify-between">
+                    <h4 className="font-medium text-[#631C21]">Rastreamento</h4>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-[#F4847B]/30"
+                      onClick={() => selectedOrder && handleRefreshTracking(Number(selectedOrder.pedidoId))}
+                      disabled={isTrackingLoading || isSyncing}
+                    >
+                      {(isTrackingLoading || isSyncing) ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" /> Atualizando…
+                        </span>
+                      ) : (
+                        "Atualizar rastreio"
+                      )}
+                    </Button>
+                  </div>
 
                   {isTrackingLoading ? (
                     <div className="flex items-center gap-2 text-[#631C21]/70">
@@ -490,15 +540,17 @@ export default function CustomerOrders() {
                     </div>
                   ) : !tracking?.trackingCarrier && !tracking?.trackingCode ? (
                     <p className="text-sm text-[#631C21]/70">
-                      Ainda não há informações de rastreio disponíveis.
+                      Ainda não há informações de rastreio disponíveis. Tente “Atualizar rastreio” em alguns minutos.
                     </p>
                   ) : (
                     <div className="flex flex-col gap-2">
                       <div>
                         <b>Transportadora:</b> {tracking?.trackingCarrier ?? "-"}
                       </div>
-                      <div className="flex items-center gap-2">
+
+                      <div className="flex flex-wrap items-center gap-2">
                         <span><b>Código:</b> {tracking?.trackingCode ?? "-"}</span>
+
                         {tracking?.trackingCode && (
                           <Button
                             type="button"
@@ -512,7 +564,13 @@ export default function CustomerOrders() {
                             Copiar código
                           </Button>
                         )}
+                        {tracking?.trackingUrl && (
+                          <Button asChild size="sm" className="bg-[#882335] text-white hover:bg-[#631C21]">
+                            <a href={tracking.trackingUrl} target="_blank" rel="noreferrer">Ver rastreio</a>
+                          </Button>
+                        )}
                       </div>
+
                       <small className="text-[#631C21]/70">
                         Copie o código e cole no site da transportadora para acompanhar.
                       </small>

@@ -1,19 +1,20 @@
+// app/api/melhorEnvio/rastreio/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const pedidoId = searchParams.get("pedidoId");
-  if (!pedidoId) return new NextResponse("pedidoId é obrigatório", { status: 400 });
+  const pedidoId = req.nextUrl.searchParams.get("pedidoId");
+  if (!pedidoId) return NextResponse.json({ error: "pedidoId obrigatório" }, { status: 400 });
 
-  const id = BigInt(pedidoId);
-  // último envio desse pedido (se houver mais de um)
-  const shipment = await prisma.shipment.findFirst({
-    where: { pedidoId: id },
-    orderBy: { createdAt: "desc" },
-    select: { trackingCarrier: true, trackingCode: true },
+  const s = await prisma.shipment.findFirst({
+    where: { pedidoId: BigInt(pedidoId) },
+    orderBy: { updatedAt: "desc" },
+    select: { trackingCarrier: true, trackingCode: true, trackingUrl: true },
   });
 
-  if (!shipment) return new NextResponse("not found", { status: 404 });
-  return NextResponse.json(shipment, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({
+    trackingCarrier: s?.trackingCarrier ?? null,
+    trackingCode: s?.trackingCode ?? null,
+    trackingUrl: s?.trackingUrl ?? null,
+  });
 }
