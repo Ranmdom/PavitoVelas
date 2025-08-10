@@ -36,77 +36,81 @@ export default function CheckoutForm() {
   const total = subtotal + (subtotal > 150 ? 0 : shippingCost)
 
   const handleCheckout = async () => {
-    if (items.length === 0) {
-      toast({ title: "Carrinho vazio", description: "Adicione produtos antes.", variant: "destructive" })
-      return
-    }
-    if (!selectedShipping && subtotal <= 150) {
-      toast({ title: "Selecione frete", description: "Escolha uma opção de frete.", variant: "destructive" })
-      return
-    }
-    setIsLoading(true)
-    try {
-      // 1) Cria o pedido e session Stripe
-      const res1 = await fetch("/api/checkout", {
+  if (items.length === 0) return toast({ title: "Carrinho vazio", variant: "destructive" });
+  if (!selectedAddress)  return toast({ title: "Endereço", description: "Selecione um endereço.", variant: "destructive" });
+  if (subtotal <= 150 && !selectedShipping)
+    return toast({ title: "Selecione frete", variant: "destructive" });
+
+  setIsLoading(true);
+  try {
+    // 1) obtenha um shippingToken do servidor (não confie no preço do cliente)
+    let shippingToken: string | null = null;
+
+    if (subtotal > 150) {
+      // frete grátis — peça token com cep + items
+      const r = await fetch("/api/melhorEnvio/sign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          items: items.map(i => ({
-            id:       i.id,
-            name:     i.name,
-            price:    i.price,
-            quantity: i.quantity,
-            image:    i.image
-          })),
-          shipping: {
-            name:  selectedShipping?.company.name || "Frete Grátis",
-            price: selectedShipping
-                      ? parseFloat(selectedShipping.custom_price || selectedShipping.price)
-                      : 0
-          },
-          postalCode,
-          userId:  session?.user?.id || null,
-          address: selectedAddress
+          postalCode: postalCode.replace(/\D/g, ""),
+          items: items.map(i => ({ id: i.id, quantity: i.quantity })),
+          // sem serviceId -> servidor entende frete grátis
         })
-      })
-      const { url, pedidoId } = await res1.json();
-      if (!pedidoId) throw new Error("pedidoId não retornado");
-      if (!res1.ok) throw new Error("Erro ao criar pedido")
-
-      // 2) Insere o frete / declara produtos no MelhorEnvio
-      const res2 = await fetch("/api/melhorEnvio/InserirFretes", {
-        method:  "POST",
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Falha ao assinar frete grátis");
+      shippingToken = j.shippingToken;  
+      console.log("SIGN FREE RESP =>", r.status, j); 
+    } else {
+      // pago: gere token no servidor a partir da opção escolhida
+      const r = await fetch("/api/melhorEnvio/sign", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          toPostal:   postalCode.replace(/\D/g, ""),
-          items:      items.map(i => ({ id: i.id, quantity: i.quantity })),
-          serviceId:  selectedShipping!.id,
-          options:    {
-            receipt:        selectedShipping!.additional_services.receipt,
-            own_hand:       selectedShipping!.additional_services.own_hand,
-            reverse:        selectedShipping!.additional_services.collect,
-            non_commercial: true
-          },
-          pedidoId    // usa o pedidoId que acabou de receber do /api/checkout
+          // mande SÓ dados necessários para o servidor recomputar/validar preço
+          postalCode: postalCode.replace(/\D/g, ""),
+          items: items.map(i => ({ id: i.id, quantity: i.quantity })),
+          serviceId: selectedShipping!.id
         })
-      })
-      const data2 = await res2.json()
-      if (!res2.ok) throw new Error(data2.error || "Erro ao registrar frete")
-
-      // 3) Redireciona pro Stripe
-      window.location.href = url
-
-    } catch (err) {
-      console.error("Erro no checkout:", err)
-      toast({
-        title:       "Falha no checkout",
-        description: (err as Error).message,
-        variant:     "destructive"
-      })
-    } finally {
-      setIsLoading(false)
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "Falha ao assinar frete");
+      console.log("SIGN PAID RESP =>", r.status, j); 
+      shippingToken = j.shippingToken;  
     }
+
+    if (!shippingToken) {
+      toast({ title: "Frete não assinado", description: "Tente selecionar o endereço novamente.", variant: "destructive" });
+      return; // 👈 não chama /api/checkout sem token
+    }
+
+    // 2) cria sessão de checkout (sem userId, sem shipping.price)
+    const res1 = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        items: items.map(i => ({ id: i.id, quantity: i.quantity })),
+        shippingToken,
+        address: selectedAddress
+      })
+    });
+
+    const data1 = await res1.json();
+    if (!res1.ok || !data1?.url) throw new Error(data1?.error || "Erro ao criar pedido");
+
+    // 3) NÃO compre/registre frete aqui. Faça no webhook Stripe (pós-pagamento).
+    window.location.href = data1.url;
+  } catch (err) {
+    console.error(err);
+    toast({ title: "Falha no checkout", description: (err as Error).message, variant: "destructive" });
+  } finally {
+    setIsLoading(false);
   }
+};
+
 
   useEffect(() => {
     if (items.length === 0) {
@@ -125,6 +129,14 @@ export default function CheckoutForm() {
     setSelectedAddress(address)
     setPostalCode(address.cep)
   }
+
+  const handleDialogClose = (shouldReset: boolean) => {
+    if (shouldReset) {
+      // Só limpe a escolha de frete quando AINDA não é grátis
+      setSelectedShipping(null);
+    }
+    // Não zere endereço/CEP aqui
+  };
 
   return (
     <div className="grid gap-8 lg:grid-cols-12">
@@ -228,11 +240,7 @@ export default function CheckoutForm() {
         selectedShipping={selectedShipping}
         subtotal={subtotal}
         onShippingSelect={handleShippingSelect}
-        onDialogClose={() => {
-          setSelectedAddress(null)
-          setPostalCode('')
-          setSelectedShipping(null)
-        }}
+        onDialogClose={handleDialogClose}
       />
     </div>
   )

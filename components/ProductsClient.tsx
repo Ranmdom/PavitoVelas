@@ -31,7 +31,7 @@ export default function ProductsClient() {
 
   const buscarProdutos = async () => {
     try {
-      const res = await fetch("/api/produtos")
+      const res = await fetch("/api/produtos?incluirSemEstoque=true")
       const dados = await res.json()
       setProdutos(
         dados.map((produto: any) => ({

@@ -9,6 +9,7 @@ export const PUBLIC_API_PREFIXES = [
   "/api/webhook",
   "/api/webhook/melhor-envio",
   "/api/health",
+  "/api/melhorEnvio/calculate",
   // Introspect: liberar só no middleware em DEV (evita expor em prod)
 ];
 
@@ -25,6 +26,7 @@ export const METHOD_OVERRIDES: Record<
   "/api/produtos/populares": { GET: "public" },
   "/api/produtos/relacionados": { GET: "public" },
   "/api/produtos/imagens-promocionais": { GET: "public" },
+  "/api/melhorEnvio/sign": { POST: "auth" },
 
   // Categorias (GET público; writes admin)
   "/api/categorias": { GET: "public", POST: "admin" },

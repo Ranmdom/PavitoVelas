@@ -36,7 +36,7 @@ type Product = {
   categoria: string  // Vem de Produto.categoria?.nome na consulta (caso exista relacionamento)
   preco: number
   fragrancia?: string
-  peso?: number
+  estoque?: number
   createdAt: string
   image?: string    // Caso haja imagem, ou usar um placeholder
 }
@@ -150,9 +150,9 @@ export default function ProductsTable({ data, onEditar }: { data: Product[], onE
       },
     },
     {
-      accessorKey: "peso",
-      header: "Peso",
-      cell: ({ row }) => <div>{row.getValue("peso")}</div>,
+      accessorKey: "estoque",
+      header: "Estoque",
+      cell: ({ row }) => <div>{row.getValue("estoque")}</div>,
     },
     {
       accessorKey: "createdAt",
@@ -349,8 +349,8 @@ export default function ProductsTable({ data, onEditar }: { data: Product[], onE
                     ? "Fragrância"
                     : column.id === "preco"
                     ? "Preço"
-                    : column.id === "peso"
-                    ? "Peso"
+                    : column.id === "estoque"
+                    ? "estoque"
                     : column.id === "createdAt"
                     ? "Criado em"
                     : column.id}

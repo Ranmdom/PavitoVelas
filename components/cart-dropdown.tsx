@@ -65,10 +65,7 @@ export default function CartDropdown() {
 
               <div className="flex flex-col gap-2">
                 <Button asChild className="w-full bg-[#882335] text-white hover:bg-[#631C21]">
-                  <Link href="/checkout">Finalizar Compra</Link>
-                </Button>
-                <Button asChild variant="outline" className="w-full border-[#631C21]/20 text-[#631C21]">
-                  <Link href="/carrinho">Ver Carrinho</Link>
+                  <Link href="/carrinho">Finalizar Compra</Link>
                 </Button>
                 <Button
                   variant="ghost"

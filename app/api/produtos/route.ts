@@ -6,6 +6,7 @@ import { Prisma } from '@prisma/client'
 // import bcrypt from 'bcrypt' // caso queira hash de senha aqui também
 import { jsonResponse } from '@/utils/jsonResponse'
 import { NOMEM } from 'dns'
+import { es } from 'date-fns/locale'
 
 
 
@@ -19,8 +20,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const fragrances = searchParams.getAll('fragrancia')
     const pesos = searchParams.getAll('peso')
     const priceRanges = searchParams.getAll('priceRange')
+    const incluirSemEstoque = searchParams.get('incluirSemEstoque') === 'true'
     
-    console.log({ categories, fragrances, pesos, priceRanges })
 
 
     const where: any = { deletedAt: null }
@@ -36,6 +37,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     if (pesos.length) {
       where.peso = { in: pesos.map((p) => parseFloat(p)) }
     }
+
+    if( !incluirSemEstoque ) {
+      where.estoque = { gt: 0 } // só produtos com estoque > 0
+    } 
 
     if (priceRanges.length) {
       where.OR = priceRanges.map((r) => {
@@ -63,6 +68,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       fragrancia: produto.fragrancia || 'Fragrância não cadastrada',
       preco: Number(produto.preco),
       peso: produto.peso,
+      estoque: produto.estoque ?? 0,
       // ────────────── AQUI ──────────────
       descricao: produto.descricao ?? 'Sem descrição',
       tempoQueima: produto.tempoQueima ?? 0,
