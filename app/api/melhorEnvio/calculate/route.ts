@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 const TOKEN         = process.env.MELHOR_ENVIO_TOKEN!;
 const ORIGIN_POSTAL = process.env.FROM_POSTAL_CODE!;
 const MELHOR_BASE = `${process.env.BASEURL_MELHOR_ENVIO}`;
-
+//Teste
 export async function POST(request: Request) {
   try {
     // 1) Lê body do front
