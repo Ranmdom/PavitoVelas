@@ -1,5 +1,5 @@
 export async function getOrder(orderId: string) {
-  const res = await fetch(`https://sandbox.melhorenvio.com.br/api/v2/me/orders/${orderId}`, {
+  const res = await fetch(`${process.env.BASEURL_MELHOR_ENVIO}/me/orders/${orderId}`, {
     headers: {
       Accept: "application/json",
       Authorization: `Bearer ${process.env.MELHOR_ENVIO_TOKEN_SANDBOX!}`,
@@ -31,7 +31,7 @@ export async function verifyMESignature(raw: ArrayBuffer, headerSig?: string | n
 export async function fetchTrackingForOrders(orderIds: string[] | string) {
   const orders = Array.isArray(orderIds) ? orderIds : [orderIds];
 
-  const res = await fetch("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/tracking", {
+  const res = await fetch(`${process.env.BASEURL_MELHOR_ENVIO}/me/shipment/tracking`, {
     method: "POST",
     headers: {
       Accept: "application/json",

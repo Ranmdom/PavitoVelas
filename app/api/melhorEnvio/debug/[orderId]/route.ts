@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE = "https://sandbox.melhorenvio.com.br/api/v2";
+const BASE = `${process.env.BASEURL_MELHOR_ENVIO}`;
 const TOKEN = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;
 
 export async function GET(_: NextRequest, { params }: { params: { orderId: string } }) {

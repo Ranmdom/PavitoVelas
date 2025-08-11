@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchTrackingForOrders } from "@/lib/melhorEnvio";
 
-const MELHOR_BASE = "https://sandbox.melhorenvio.com.br/api/v2";
+const MELHOR_BASE = `${process.env.BASEURL_MELHOR_ENVIO}`;
 const TOKEN = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;
 
 export async function POST(req: NextRequest) {

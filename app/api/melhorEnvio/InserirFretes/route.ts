@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 
 
 const TOKEN = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;
-const BASEURL = "https://sandbox.melhorenvio.com.br/api/v2";
+const BASEURL = `${process.env.BASEURL_MELHOR_ENVIO}`;
 
 // dados da loja
 const STORE_NAME = process.env.STORE_NAME!;
