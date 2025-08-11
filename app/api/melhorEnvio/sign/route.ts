@@ -11,6 +11,7 @@ const ME_TOKEN   = process.env.MELHOR_ENVIO_TOKEN!;               // produção/
 const FROM_POST  = process.env.FROM_POSTAL_CODE!;
 const SECRET     = process.env.SHIPPING_TOKEN_SECRET!;
 const THRESHOLD_FREE_CENTS = 15000; // R$150,00
+const MELHOR_BASE = `${process.env.BASEURL_MELHOR_ENVIO}`;
 
 const BodySchema = z.object({
   postalCode: z.string().min(8),
@@ -93,7 +94,7 @@ export async function POST(req: Request) {
     }
 
     // Recalcula frete para o serviceId escolhido (fonte da verdade = servidor)
-    const resp = await fetch("https://www.melhorenvio.com.br/api/v2/me/shipment/calculate", {
+    const resp = await fetch(`${MELHOR_BASE}/me/shipment/calculate`, {
       method: "POST",
       headers: {
         Accept: "application/json",

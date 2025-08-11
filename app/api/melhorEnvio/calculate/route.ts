@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 const TOKEN         = process.env.MELHOR_ENVIO_TOKEN!;
 const ORIGIN_POSTAL = process.env.FROM_POSTAL_CODE!;
+const MELHOR_BASE = `${process.env.BASEURL_MELHOR_ENVIO}`;
 
 export async function POST(request: Request) {
   try {
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
 
     // 4) Chama a API *uma vez* passando esse array completo
     const resp = await fetch(
-      "https://www.melhorenvio.com.br/api/v2/me/shipment/calculate",
+      `${MELHOR_BASE}/me/shipment/calculate`,
       {
         method:  "POST",
         headers: {

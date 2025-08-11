@@ -2,7 +2,7 @@ export async function getOrder(orderId: string) {
   const res = await fetch(`${process.env.BASEURL_MELHOR_ENVIO}/me/orders/${orderId}`, {
     headers: {
       Accept: "application/json",
-      Authorization: `Bearer ${process.env.MELHOR_ENVIO_TOKEN_SANDBOX!}`,
+      Authorization: `Bearer ${process.env.MELHOR_ENVIO_TOKEN!}`,
       "User-Agent": "PavitoVelas (suporte@pavito.com)",
     },
     cache: "no-store",
@@ -36,7 +36,7 @@ export async function fetchTrackingForOrders(orderIds: string[] | string) {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.MELHOR_ENVIO_TOKEN_SANDBOX!}`,
+      Authorization: `Bearer ${process.env.MELHOR_ENVIO_TOKEN!}`,
       "User-Agent": "PavitoVelas (suporte@pavito.com)",
     },
     body: JSON.stringify({ orders }),

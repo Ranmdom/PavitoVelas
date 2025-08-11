@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 
 
-const TOKEN = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;
+const TOKEN = process.env.MELHOR_ENVIO_TOKEN!;
 const BASEURL = `${process.env.BASEURL_MELHOR_ENVIO}`;
 
 // dados da loja

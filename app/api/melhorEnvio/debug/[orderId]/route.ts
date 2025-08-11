@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BASE = `${process.env.BASEURL_MELHOR_ENVIO}`;
-const TOKEN = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;
+const TOKEN = process.env.MELHOR_ENVIO_TOKEN!;
 
 export async function GET(_: NextRequest, { params }: { params: { orderId: string } }) {
   const id = params.orderId;

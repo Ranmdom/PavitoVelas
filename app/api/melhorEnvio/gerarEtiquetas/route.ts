@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { fetchTrackingForOrders, extractTracking } from "@/lib/melhorEnvio";
 
 const MELHOR_BASE = `${process.env.BASEURL_MELHOR_ENVIO}`;
-const TOKEN = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;
+const TOKEN = process.env.MELHOR_ENVIO_TOKEN!;
 
 export async function POST(req: NextRequest) {
   const { pedidoId, shipments: shipmentIds }: { pedidoId: string; shipments: string[] } = await req.json();
