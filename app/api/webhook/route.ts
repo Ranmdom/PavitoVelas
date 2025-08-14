@@ -106,17 +106,22 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   const nomes: string[] = pedido?.itensPedido.map(i => i.produto.nome) || []
   await sendPaymentConfirmed(email, nomes)
 
+  
   // 2) Busca o cartItemId salvo no Pedido
-  const pedidoRecord = await prisma.pedido.findUnique({
-    where:  { pedidoId },
-    select: { cartItemId: true },
+  const pedidoRecord = await prisma.shipment.findMany({
+    where:   { pedidoId },
+    select:  { melhorEnvioOrderId: true, melhorEnvioQuoteId: true, status: true },
+    orderBy: { createdAt: "desc" },
   })
-  if (!pedidoRecord?.cartItemId) {
-    console.error("❌ Pedido sem cartItemId no banco")
-    return
-  }
-  const orders = [pedidoRecord.cartItemId]
-  console.log("→ Usando orders:", orders)
+
+  // 1) Preferir ordens já criadas no Melhor Envio
+  let orders: string[] = Array.from(
+    new Set(
+      pedidoRecord
+        .map(s => s.melhorEnvioOrderId)
+        .filter((v): v is string => Boolean(v))
+    )
+  )
 
   // 3) Chama rota interna de compra de frete
   let coJson: any

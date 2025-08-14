@@ -11,14 +11,14 @@ model Usuario {
   usuarioId BigInt     @id @default(autoincrement())
   nome      String
   sobrenome String
-  cpf       String?    @db.VarChar(11)
   email     String     @unique
   senhaHash String
-  celular   String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @default(now())
   deletedAt DateTime?
   tipo      String     @default("cliente")
+  cpf       String?    @db.VarChar(11)
+  celular   String?    @db.VarChar(20)
   enderecos Endereco[]
   pedidos   Pedido[]
 }
@@ -64,13 +64,12 @@ model Pedido {
   updatedAt       DateTime         @default(now())
   deletedAt       DateTime?
   stripeSessionId String?          @unique
+  cartItemId      String?          @map("cart_item_id")
   EnderecoPedido  EnderecoPedido[]
   itensPedido     ItemPedido[]
   pagamentos      Pagamento[]
   usuario         Usuario          @relation(fields: [usuarioId], references: [usuarioId])
-
-  cartItemId      String?          @map("cart_item_id")
-  shipments       Shipment[]       // ponta inversa para o model Shipment
+  shipments       Shipment[]
 }
 
 model ItemPedido {
@@ -82,7 +81,7 @@ model ItemPedido {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now())
   deletedAt     DateTime?
-  pedido        Pedido    @relation(fields: [pedidoId], references: [pedidoId])
+  pedido        Pedido    @relation(fields: [pedidoId], references: [pedidoId], onDelete: Cascade, onUpdate: NoAction)
   produto       Produto   @relation(fields: [produtoId], references: [produtoId])
 }
 
@@ -130,23 +129,31 @@ model EnderecoPedido {
 }
 
 model Shipment {
-  shipmentId           BigInt   @id @default(autoincrement()) @map("shipment_id")
-  pedidoId             BigInt                         @map("pedido_id")
-  melhorEnvioQuoteId   Int?                           @map("melhor_envio_quote_id")
-  melhorEnvioOrderId   String   @unique                 @map("melhor_envio_order_id")
-  etiquetaUrl          String                        @map("etiqueta_url")
-  status               String   @default("created")
-  createdAt            DateTime @default(now())        @map("created_at")
-  updatedAt            DateTime @updatedAt             @map("updated_at")
+  shipmentId         BigInt   @id @default(autoincrement()) @map("shipment_id")
+  pedidoId           BigInt   @map("pedido_id")
+  melhorEnvioOrderId String   @unique @map("melhor_envio_order_id")
+  etiquetaUrl        String   @map("etiqueta_url")
+  status             String   @default("created")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  melhorEnvioQuoteId Int?     @map("melhor_envio_quote_id")
   trackingCode       String?  @map("tracking_code")
   trackingCarrier    String?  @map("tracking_carrier")
   trackingUrl        String?  @map("tracking_url")
+  pedido             Pedido   @relation(fields: [pedidoId], references: [pedidoId], onDelete: Cascade, onUpdate: NoAction, map: "fk_shipments_pedido")
 
-  pedido               Pedido   @relation(fields: [pedidoId], references: [pedidoId])
-
-  @@index([pedidoId], map: "shipments_pedido_id_index")
+  @@index([pedidoId, createdAt(sort: Desc)], map: "shipments_pedido_created_idx")
   @@map("shipments")
 }
 
+model StripeEvent {
+  id        String   @id
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+}
 
+model stripe_event {
+  id         String   @id
+  created_at DateTime @default(now()) @db.Timestamptz(6)
 
+  @@index([created_at(sort: Desc)])
+}

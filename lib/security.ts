@@ -7,7 +7,7 @@ export const PUBLIC_API_PREFIXES = [
   "/api/auth",                 // NextAuth
   "/api/public",
   "/api/webhook",
-  "/api/webhook/melhor-envio",
+  "/api/webhook/melhorEnvio",
   "/api/health",
   "/api/melhorEnvio/calculate",
   // Introspect: liberar só no middleware em DEV (evita expor em prod)
