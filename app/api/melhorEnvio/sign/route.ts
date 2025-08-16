@@ -7,11 +7,11 @@ import { z } from "zod";
 import crypto from "crypto";
 
 export const runtime = "nodejs";
-const ME_TOKEN   = process.env.MELHOR_ENVIO_TOKEN!;               // produção/sandbox conforme seu env
+const ME_TOKEN   = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;               // produção/sandbox conforme seu env
 const FROM_POST  = process.env.FROM_POSTAL_CODE!;
 const SECRET     = process.env.SHIPPING_TOKEN_SECRET!;
 const THRESHOLD_FREE_CENTS = 15000; // R$150,00
-const MELHOR_BASE = `${process.env.BASEURL_MELHOR_ENVIO}`;
+const MELHOR_BASE = `${process.env.BASEURL_MELHOR_ENVIO_SANDBOX}`;
 
 const BodySchema = z.object({
   postalCode: z.string().min(8),
