@@ -59,9 +59,9 @@ export async function sendPaymentConfirmed(to: string, produtos: string[]) {
     return sendMail({to, subject, html})
 }
 
-export async function sendPaymentPending(to: string, pedidoId: BigInt) {
+export async function sendPaymentPending(to: string, nomes: string[]) {
     const subject = 'Aguardando Pagamento'
-    const html = `<p>Olá! Recebemos seu pedido <strong>${pedidoId.toString()}</strong>, mas ainda estamos aguardando o pagamento.</p>
+    const html = `<p>Olá! Recebemos seu pedido <strong>${nomes.toString()}</strong>, mas ainda estamos aguardando o pagamento.</p>
     <p>Assim que confirmado, enviaremos a confirmação.</p>`;
 
     return sendMail({to, subject, html})

@@ -2,9 +2,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const TOKEN         = process.env.MELHOR_ENVIO_TOKEN!;
+const TOKEN         = process.env.MELHOR_ENVIO_TOKEN_SANDBOX!;
 const ORIGIN_POSTAL = process.env.FROM_POSTAL_CODE!;
-const MELHOR_BASE = `${process.env.BASEURL_MELHOR_ENVIO}`;
+const MELHOR_BASE = `${process.env.BASEURL_MELHOR_ENVIO_SANDBOX}`;
 //Teste
 export async function POST(request: Request) {
   try {

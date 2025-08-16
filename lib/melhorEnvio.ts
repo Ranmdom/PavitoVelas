@@ -1,8 +1,8 @@
 export async function getOrder(orderId: string) {
-  const res = await fetch(`${process.env.BASEURL_MELHOR_ENVIO}/me/orders/${orderId}`, {
+  const res = await fetch(`${process.env.BASEURL_MELHOR_ENVIO_SANDBOX}/me/orders/${orderId}`, {
     headers: {
       Accept: "application/json",
-      Authorization: `Bearer ${process.env.MELHOR_ENVIO_TOKEN!}`,
+      Authorization: `Bearer ${process.env.MELHOR_ENVIO_TOKEN_SANDBOX!}`,
       "User-Agent": "PavitoVelas (suporte@pavito.com)",
     },
     cache: "no-store",
@@ -31,12 +31,12 @@ export async function verifyMESignature(raw: ArrayBuffer, headerSig?: string | n
 export async function fetchTrackingForOrders(orderIds: string[] | string) {
   const orders = Array.isArray(orderIds) ? orderIds : [orderIds];
 
-  const res = await fetch(`${process.env.BASEURL_MELHOR_ENVIO}/me/shipment/tracking`, {
+  const res = await fetch(`${process.env.BASEURL_MELHOR_ENVIO_SANDBOX}/me/shipment/tracking`, {
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.MELHOR_ENVIO_TOKEN!}`,
+      Authorization: `Bearer ${process.env.MELHOR_ENVIO_TOKEN_SANDBOX!}`,
       "User-Agent": "PavitoVelas (suporte@pavito.com)",
     },
     body: JSON.stringify({ orders }),
