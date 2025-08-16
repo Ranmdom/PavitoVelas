@@ -194,7 +194,7 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session, eventType
   try {
     const co = await fetch(`${BASE}/api/melhorEnvio/compraEtiquetas`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }, // <- sem x-internal-key
       body: JSON.stringify({ pedidoId: pedidoId.toString() }),
     });
     const coText = await co.text();
