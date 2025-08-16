@@ -89,7 +89,7 @@ export default function MainNav() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-4 overflow-hidden">
+          <div className="flex items-center gap-4 overflow-hidden" style={{height:"48px"}}>
             {isSearchOpen ? (
               <form
                 onSubmit={(e) => {
