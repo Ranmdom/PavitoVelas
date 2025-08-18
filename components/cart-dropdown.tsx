@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
+import { useState } from "react"
 import { ShoppingBag } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -17,9 +17,15 @@ import CartItem from "@/components/cart-item"
 
 export default function CartDropdown() {
   const { items, itemCount, subtotal, clearCart } = useCart()
+  const [open, setOpen] = useState(false)
+
+  const handleClear = async () => {
+    await clearCart()
+    setOpen(false)
+  }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative text-[#631C21]">
           <ShoppingBag className="h-5 w-5" />
@@ -31,6 +37,7 @@ export default function CartDropdown() {
           <span className="sr-only">Carrinho</span>
         </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent align="end" className="w-80">
         <div className="p-4">
           <h3 className="font-medium text-[#631C21]">Meu Carrinho</h3>
@@ -64,14 +71,18 @@ export default function CartDropdown() {
               </div>
 
               <div className="flex flex-col gap-2">
+                {/* Fecha o dropdown antes de navegar */}
                 <Button asChild className="w-full bg-[#882335] text-white hover:bg-[#631C21]">
-                  <Link href="/carrinho">Finalizar Compra</Link>
+                  <Link href="/carrinho" onClick={() => setOpen(false)}>
+                    Finalizar Compra
+                  </Link>
                 </Button>
+
                 <Button
                   variant="ghost"
                   size="sm"
                   className="mt-1 text-[#631C21]/70 hover:text-[#631C21]"
-                  onClick={clearCart}
+                  onClick={handleClear}
                 >
                   Limpar Carrinho
                 </Button>
@@ -80,7 +91,7 @@ export default function CartDropdown() {
           </>
         ) : (
           <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href="/produtos" className="flex h-10 w-full items-center justify-center">
+            <Link href="/produtos" onClick={() => setOpen(false)} className="flex h-10 w-full items-center justify-center">
               Explorar produtos
             </Link>
           </DropdownMenuItem>
@@ -89,4 +100,3 @@ export default function CartDropdown() {
     </DropdownMenu>
   )
 }
-
