@@ -20,10 +20,22 @@ export async function getOrder(orderId: string) {
 
 
 export async function verifyMESignature(raw: ArrayBuffer, headerSig?: string | null) {
+  const secret = process.env.ENVIO_SECRET ?? process.env.ME_APP_SECRET;
+  if (!secret) {
+    console.error("ME ▶︎ faltando ENVIO_SECRET/ME_APP_SECRET no .env.local");
+    return false;
+  }
+
   const crypto = await import("crypto");
-  const h = crypto.createHmac("sha256", process.env.ME_APP_SECRET!).update(Buffer.from(raw)).digest("base64");
-  const a = Buffer.from(h);
-  const b = Buffer.from(headerSig || "");
+  const bodyBuf = Buffer.from(raw);
+
+  const mac = crypto.createHmac("sha256", secret).update(bodyBuf).digest("base64");
+
+  // (opcional para depuração)
+  // console.log("ME ▶︎ my-mac:", mac, "hdr:", headerSig);
+
+  const a = Buffer.from(mac);
+  const b = Buffer.from(headerSig ?? "");
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
