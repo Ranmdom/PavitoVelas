@@ -74,33 +74,45 @@ export default function FeaturedProduct() {
   }
 
   return (
-    <div className="relative grid md:grid-cols-2 gap-8 p-8 border rounded-lg">
-      <div className="relative aspect-square bg-gradient-to-br from-[#FBE1D0] to-[#F4847B]/20">
-        <Image src={imageUrl} alt={product.nome} fill className="object-contain p-6" />
+  <div className="relative grid md:grid-cols-2 gap-6 p-4 sm:p-6 md:p-8 max-w-screen-lg mx-auto w-full">
+    {/* coluna da imagem */}
+    <div className="relative min-w-0 overflow-hidden aspect-[4/3] sm:aspect-square rounded-lg bg-gradient-to-br from-[#FBE1D0] to-[#F4847B]/20 p-4 sm:p-6">
+      <Image
+        src={imageUrl}
+        alt={product.nome}
+        fill
+        className="object-contain"
+        sizes="(min-width:768px) 50vw, 100vw"
+        priority
+      />
+    </div>
+
+    {/* coluna do texto */}
+    <div className="flex flex-col min-w-0">
+      <span className="mb-2 inline-block rounded-full bg-[#F4847B]/10 px-3 py-1 text-sm font-medium text-[#F4847B]">
+        Edição Limitada
+      </span>
+      <h2 className="text-3xl font-bold text-[#631C21]">{product.nome}</h2>
+      <p className="my-2 text-sm text-[#631C21]/70">
+        Peso: {product.peso}g • Tempo de queima: ~{product.tempoQueima}h
+      </p>
+      <div className="my-4 text-3xl font-bold text-[#882335]">
+        {new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(product.preco)}
       </div>
-      <div className="flex flex-col">
-        <span className="mb-2 inline-block rounded-full bg-[#F4847B]/10 px-3 py-1 text-sm font-medium text-[#F4847B]">
-          Edição Limitada
-        </span>
-        <h2 className="text-3xl font-bold text-[#631C21]">{product.nome}</h2>
-        <p className="my-2 text-sm text-[#631C21]/70">
-          Peso: {product.peso}g &bull; Tempo de queima: ~{product.tempoQueima}h
-        </p>
-        <div className="my-4 text-3xl font-bold text-[#882335]">
-          {new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(product.preco)}
-        </div>
-        <p className="mb-6 text-[#631C21]/80">{product.descricao}</p>
-        <div className="flex items-center gap-4 mb-6">
-          <Card className="flex items-center justify-between w-32 border">
-            <Button variant="ghost" size="icon" onClick={decrease}><Minus className="h-4 w-4"/></Button>
-            <CardContent className="p-0"><span className="text-lg">{quantity}</span></CardContent>
-            <Button variant="ghost" size="icon" onClick={increase}><Plus className="h-4 w-4"/></Button>
-          </Card>
-          <Button className="flex-1 bg-[#882335] text-white" onClick={handleAddToCart}>
-            <ShoppingCart className="mr-2 h-4 w-4"/> Adicionar ao carrinho
-          </Button>
-        </div>
+      <p className="mb-6 text-[#631C21]/80">{product.descricao}</p>
+
+      <div className="flex items-center gap-4 mb-6">
+        <Card className="flex items-center justify-between w-32 border">
+          <Button variant="ghost" size="icon" onClick={decrease}><Minus className="h-4 w-4"/></Button>
+          <CardContent className="p-0"><span className="text-lg">{quantity}</span></CardContent>
+          <Button variant="ghost" size="icon" onClick={increase}><Plus className="h-4 w-4"/></Button>
+        </Card>
+        <Button className="flex-1 bg-[#882335] text-white" onClick={handleAddToCart}>
+          <ShoppingCart className="mr-2 h-4 w-4"/> Adicionar ao carrinho
+        </Button>
       </div>
     </div>
-  )
+  </div>
+)
+
 }
