@@ -76,7 +76,7 @@ export default function FeaturedProduct() {
   return (
   <div className="relative grid md:grid-cols-2 gap-6 p-4 sm:p-6 md:p-8 max-w-screen-lg mx-auto w-full">
     {/* coluna da imagem */}
-    <div className="relative min-w-0 overflow-hidden aspect-[4/3] sm:aspect-square rounded-lg bg-gradient-to-br from-[#FBE1D0] to-[#F4847B]/20 p-4 sm:p-6">
+    <div className="relative min-w-0 overflow-hidden aspect-[4/3] sm:aspect-square rounded-lg bg-gradient-to-br from-[#FBE1D0] to-[#F4847B]/20 p-6 sm:p-6">
       <Image
         src={imageUrl}
         alt={product.nome}

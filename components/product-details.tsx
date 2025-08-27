@@ -119,17 +119,17 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
           <div className="mb-2 flex items-center gap-2">
             <span className="text-sm font-medium text-[#631C21]/70">{product.category}</span>
             <span className="text-[#631C21]/50">•</span>
-            <div className="flex items-center">
+            { /*<div className="flex items-center">
               {[...Array(5)].map((_, i) => (
-                <Star
+                 <Star
                   key={i}
                   className={`h-4 w-4 ${
                     i < Math.floor(product.rating) ? "fill-[#F4847B] text-[#F4847B]" : "fill-none text-[#F4847B]/30"
                   }`}
-                />
+                /> 
               ))}
-              <span className="ml-2 text-sm text-[#631C21]/70">({product.reviews} avaliações)</span>
-            </div>
+              <span className="ml-2 text-sm text-[#631C21]/70">({product.reviews} avaliações)</span> 
+            </div> */}
           </div>
           <h1 className="text-3xl font-bold text-[#631C21] md:text-4xl">{product.name}</h1>
           <p className="mt-4 text-[#631C21]/80">{product.description}</p>
