@@ -1,4 +1,5 @@
 // app/api/webhook/route.ts
+// WEBHOOK DE RETORNO DE PAGAMENTO DA STRIPE
 export const runtime = "nodejs";
 
 import { type NextRequest, NextResponse } from "next/server";
@@ -216,10 +217,11 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session, eventType
     where: { pedidoId },
     select: { melhorEnvioOrderId: true },
   });
-  const orders: string[] = ships.map(s => s.melhorEnvioOrderId).filter((v): v is string => Boolean(v));
-  if (!orders.length && pedido.cartItemId) orders.push(pedido.cartItemId);
-  if (!orders.length) { console.warn("⚠️ Sem melhorEnvioOrderId/cartItemId; pulando compra/geração."); return; }
-  console.log("→ Usando orders:", orders);
+  const orders = ships.map(s => s.melhorEnvioOrderId).filter(Boolean);
+  if (!orders.length) {
+    console.warn("Sem melhorEnvioOrderId; ainda não houve inserção no carrinho do ME.");
+    return; // NÃO faça checkout/generate sem id válido
+  }
 
   // 8) COMPRA (checkout) + persistTracking
   try {

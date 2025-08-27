@@ -1,17 +1,15 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const prisma = new PrismaClient()
+type Ctx = { params: Promise<{ id: string }> };
 
 // GET /api/admin/pedidos/[id] - Listar todos os pedidos de um usuário
-export async function GET(
-  request: Request,
-  context: { params: { id: string } }
-) {
+export async function GET(_req: NextRequest, ctx: Ctx) {
   try {
-    const { params } = await context
+    const { id } = await ctx.params;  
     const session = await getServerSession(authOptions)
 
     if (!session?.user) {
@@ -19,14 +17,14 @@ export async function GET(
     }
 
     // Garante que usuário só veja os próprios pedidos
-    if (session.user.id !== params.id) {
+    if (session.user.id !== id) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 403 })
     }
 
     // Busca todos os pedidos ativos (deletedAt = null) daquele usuário
     const pedidos = await prisma.pedido.findMany({
       where: {
-        usuarioId: BigInt(params.id),
+        usuarioId: BigInt(id),
         deletedAt: null,
       },
       include: {

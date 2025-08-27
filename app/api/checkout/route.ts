@@ -237,22 +237,13 @@ export async function POST(req: NextRequest) {
     try {
       if (tok.svc == null) {
         console.warn("ME: token de frete sem serviceId; pulando inserção no carrinho");
-      } else if (!address) {
-        console.warn("ME: endereço ausente; pulando inserção no carrinho");
       } else {
         await insertFreteNoCarrinho({
           pedidoId: pedido.pedidoId,              // BigInt
           userId: BigInt(userId),
           serviceId: Number(tok.svc),
           items,
-          toAddress: {
-            cep: address.cep,
-            logradouro: address.logradouro,
-            numero: address.numero,
-            bairro: address.bairro,
-            cidade: address.cidade,
-            estado: address.estado,
-          },
+          toAddress: address,
         });
         console.log("ME: inserido no carrinho e salvo (orderId gravado em Pedido/Shipments).");
       }
