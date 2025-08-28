@@ -38,6 +38,7 @@ export const METHOD_OVERRIDES: Record<
   "/api/usuarios/enderecos": { GET: "auth", POST: "auth" },
   "/api/usuarios/enderecos/[id]": { PUT: "auth", DELETE: "auth" },
   "/api/usuarios/pedidos/[id]": { GET: "auth" },
+  "/api/admin/pedidos/[id]": { GET: "auth" },
 
   // Itens/Pedidos (sempre com owner-check no handler)
   "/api/itensPedido": { GET: "auth", POST: "auth" },
